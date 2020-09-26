@@ -1,0 +1,11 @@
+bool checked = true;
+List data_allcampagins;
+List data_invitations;
+List data_upcoming;
+String release_date;
+List items = List();
+List items_upcoming = List();
+bool start=true;
+bool start_upcoming=true;
+bool isLoggedIn = false;
+Map userProfile;
