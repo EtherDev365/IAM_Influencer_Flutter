@@ -31,30 +31,66 @@ class _SecondScreen extends State<SecondScreen> {
   String uid;
   bool isSignedIn = false;
 
+  ///@return String is uid
+  ///signIn with GoogleSignInAccount
   Future<String> signInWithGoogle() async {
-    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
-    final GoogleSignInAuthentication googleSignInAuthentication =
-        await googleSignInAccount.authentication;
+    var uid;
+    GoogleSignInAccount user = googleSignIn.currentUser;
+    if (user == null)
+      user = await googleSignIn
+          .signInSilently()
+          .catchError((e, t) => print('Error sign with goole $e $t'));
+    if (user == null) {
+      try {
+        user = await googleSignIn.signIn();
+      } catch (e, t) {
+        print('Error $e $t');
+      }
+    }
+    fb.User fUser = _auth.currentUser;
+    if (fUser == null) {
+      GoogleSignInAuthentication credentials =
+          await googleSignIn?.currentUser?.authentication;
 
-    final AuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleSignInAuthentication.accessToken,
-      idToken: googleSignInAuthentication.idToken,
-    );
-    final authResult = await _auth.signInWithCredential(credential);
-    fb.User user = authResult.user;
+      final fb.AuthCredential credential = fb.GoogleAuthProvider.credential(
+        accessToken: credentials.accessToken,
+        idToken: credentials.idToken,
+      );
 
-    assert(!user.isAnonymous);
-    assert(await user.getIdToken() != null);
-
-    fb.User currentUser = _auth.currentUser;
-    assert(user.uid == currentUser.uid);
-    name = user.displayName;
-    email = user.email;
-    uid = user.uid;
-    imageUrl = user.photoURL;
-    isSignedIn = await googleSignIn.isSignedIn();
-    return 'signInWithGoogle succeeded: $user';
+      // print('credential = $credential');
+      final user = await _auth.signInWithCredential(credential);
+      fb.User fUser = user.user;
+      uid = fUser.uid;
+    }
+    return uid;
   }
+
+  // Future<User> signInWithGoogle() async {
+  //   final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
+  //   final GoogleSignInAuthentication googleSignInAuthentication =
+  //       await googleSignInAccount.authentication;
+
+  //   final AuthCredential credential = GoogleAuthProvider.credential(
+  //     accessToken: googleSignInAuthentication.accessToken,
+  //     idToken: googleSignInAuthentication.idToken,
+  //   );
+  //   final authResult = await _auth.signInWithCredential(credential);
+  //   fb.User user = authResult.user;
+
+  //   assert(!user.isAnonymous);
+  //   assert(await user.getIdToken() != null);
+
+  //   fb.User currentUser = _auth.currentUser;
+  //   assert(user.uid == currentUser.uid);
+  //   name = user.displayName;
+  //   email = user.email;
+  //   uid = user.uid;
+  //   imageUrl = user.photoURL;
+  //   isSignedIn = await googleSignIn.isSignedIn();
+  //   print('user =$user');
+  //   // return 'signInWithGoogle succeeded: $user';
+  //   return user;
+  // }
 
   ///Old Version
   // Future<String> signInWithGoogle() async {
@@ -216,34 +252,40 @@ class _SecondScreen extends State<SecondScreen> {
               SizedBox(width: size.width / 8),
               InkWell(
                   onTap: () {
-                    signInWithGoogle().whenComplete(() {
-                      http.post(Uri.encodeFull(google_login_url), body: {
-                        "name": name,
-                        "email": email,
-                        "google_id": uid,
-                        "avatar": imageUrl
-                      }).then((response) async {
-                        print(response.body.toString());
-                        token = jsonDecode(response.body)['token'];
-                        loged = true;
-                        var convertDataToJson = jsonDecode(response.body);
-                        var data = convertDataToJson['data'];
-                        if (data['username'] == null) {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MyDemo(),
-                              ));
-                        } else {
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => HomePage()));
-                        }
-                      });
-                    }).catchError((onError) {
-                      Navigator.pushReplacementNamed(context, "/auth");
+                    signInWithGoogle().then((value) {
+                      print('value =$value');
                     });
+                    // signInWithGoogle().whenComplete(() {
+                    //   print('google_login_url');
+                    //   http.post(Uri.encodeFull(google_login_url), body: {
+                    //     "name": name,
+                    //     "email": email,
+                    //     "google_id": uid,
+                    //     "avatar": imageUrl
+                    //   }).then((response) async {
+                    //     print(response.body.toString());
+                    //     token = jsonDecode(response.body)['token'];
+                    //     loged = true;
+                    //     var convertDataToJson = jsonDecode(response.body);
+                    //     var data = convertDataToJson['data'];
+                    //     if (data['username'] == null) {
+                    //       Navigator.push(
+                    //           context,
+                    //           MaterialPageRoute(
+                    //             builder: (context) => MyDemo(),
+                    //           ));
+                    //     } else {
+                    //       Navigator.pushReplacement(
+                    //           context,
+                    //           MaterialPageRoute(
+                    //               builder: (context) => HomePage()));
+                    //     }
+                    //   });
+                    // }).catchError((onError) {
+                    //   print('Error $onError');
+                    //   Navigator.pop(context);
+                    //   //Navigator.pushReplacementNamed(context, "/auth");
+                    // });
                   },
                   child: Container(
                     width: size.width / 5,
