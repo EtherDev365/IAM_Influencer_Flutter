@@ -1,8 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_kazee5/component/gradient_button.dart';
+import 'package:flutter_app_kazee5/detailcampaign/detailcampaign.dart';
 import 'package:flutter_app_kazee5/utils/color.dart';
 import 'package:flutter_app_kazee5/utils/value.dart';
+import 'package:http/http.dart' as http;
+
+import '../login.dart';
 class UpComing extends StatefulWidget {
   @override
   _UpComing createState() => _UpComing();
@@ -11,14 +19,17 @@ class UpComing extends StatefulWidget {
 class _UpComing extends State<UpComing>with AutomaticKeepAliveClientMixin<UpComing> {
   @override
   bool get wantKeepAlive => true;
-  int perPage_upcoming  = 5;
-  int present_upcoming = 0;
-  List<bool> _selected = List.generate(1000, (i) => false);
+  String list_saved="http://36.37.120.131/iam-mobile/api/list-save-campaign";
+  String save_url="http://36.37.120.131/iam-mobile/api/save-campaign";
+  String delete_url="http://36.37.120.131/iam-mobile/api/delete-campaign";
+  List data;
+  List<String> data_saved_id=new List();
+
   void initState() {
     super.initState();
-    items_upcoming.clear();
     setState(() {
-      if((5>=data_upcoming.length)){items_upcoming.addAll(data_upcoming);present_upcoming=data_upcoming.length;}else{items_upcoming.addAll(data_upcoming.getRange(0, 5));present_upcoming=5;}
+      if(loged==true){http.get(Uri.encodeFull(list_saved), headers: {HttpHeaders.authorizationHeader:'Bearer $token'}).then((response) {var rep = jsonDecode(response.body);data=rep['data'];for(int i=0;i<data.length;i++){data_saved_id.add(data[i]['id_campaign'].toString());}});}
+      if(data_upcoming!=null){if((5>=data_upcoming.length)){print("good");items_upcoming.clear();items_upcoming.addAll(data_upcoming);present_upcoming=data_upcoming.length;}else{items_upcoming.clear();items_upcoming.addAll(data_upcoming.getRange(0, 5));present_upcoming=5;}}
     });
   }
   @override
@@ -52,7 +63,26 @@ class _UpComing extends State<UpComing>with AutomaticKeepAliveClientMixin<UpComi
                   present_upcoming = present_upcoming + perPage_upcoming;
                 });
               },)
-                  :buildCard(context,index);
+                  :InkWell(onTap:() async {
+                if(loged==false){showAlertDialog(context);
+                Timer(Duration(seconds: 2),
+                        ()=>Navigator.pushReplacement(context,
+                        MaterialPageRoute(builder:
+                            (context) =>
+                            SecondScreen()
+                        )
+                    )
+                );}else{
+                  detail_campaign_id=data_allcampagins[index]['id_campaign'];
+                  await http.post(Uri.encodeFull(detailcampaign_url), body: {
+                    "id_campaign":detail_campaign_id.toString()}, headers: {HttpHeaders.authorizationHeader:'Bearer $token'}).then((response) {
+                    if(response.statusCode==200){  var convertDataToJson = jsonDecode(response.body);
+                    data_detail_campaign = convertDataToJson['data'];}
+                    print(data_detail_campaign[0]['id_campaign'].toString());
+                    Navigator.push(context,  MaterialPageRoute(builder: (context) =>  DetailCampaign()));
+                  });
+                }
+              },child:buildCard(context,index));
             }),
 
         Align(
@@ -125,13 +155,18 @@ class _UpComing extends State<UpComing>with AutomaticKeepAliveClientMixin<UpComi
                       child: InkWell(
                         onTap: () {
                           setState(() {
-                            _selected[index] = !_selected[index];
+                            if(data_saved_id.contains(data_upcoming[index]['id_campaign'].toString()))
+                            {http.post(Uri.encodeFull(delete_url), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},body: { "id_campaign":data_upcoming[index]['id_campaign'].toString(),}).then((response)
+                            { print(response.body); if(loged==true){http.get(Uri.encodeFull(list_saved), headers: {HttpHeaders.authorizationHeader:'Bearer $token'}).then((response) {var rep = jsonDecode(response.body);data=rep['data'];for(int i=0;i<data.length;i++){data_saved_id.add(data[i]['id_campaign'].toString());}});}});}
+                            else{http.post(Uri.encodeFull(save_url), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},body: {"id_campaign": data_upcoming[index]['id_campaign'].toString(), }).then((response)
+                            { print(response.body); if(loged==true){http.get(Uri.encodeFull(list_saved), headers: {HttpHeaders.authorizationHeader:'Bearer $token'}).then((response) {var rep = jsonDecode(response.body);data=rep['data'];for(int i=0;i<data.length;i++){data_saved_id.add(data[i]['id_campaign'].toString());}});}});}
+
                           });
                         },
                         child: Image.asset(
                           "assets/fav 567@3x (2).png",
                           color:
-                          _selected[index]  ? kSelectedLabelColor : kBackgoundColor,
+                          (loged==true)?(data_saved_id.contains((data_upcoming[index]['id_campaign'].toString()))? kSelectedLabelColor : kBackgoundColor):kBackgoundColor,
                           height: 24.0,
                           width: 24.0,
                         ),
@@ -162,7 +197,7 @@ class _UpComing extends State<UpComing>with AutomaticKeepAliveClientMixin<UpComi
                         alignment: Alignment.centerLeft,
                         padding: EdgeInsets.symmetric(horizontal: 20.0),
                         child: Text(
-                          items_upcoming[index]['release_date'],
+                          data_upcoming[index]['release_date'] != null ? data_upcoming[index]['release_date'].toString(): "",
                           style:
                           TextStyle(color: kBackgoundColor, fontSize: 10.0),
                         ),
@@ -177,11 +212,9 @@ class _UpComing extends State<UpComing>with AutomaticKeepAliveClientMixin<UpComi
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      items_upcoming[index]['hashtag'],
-                                      style: TextStyle(
-                                          color: kTextThemColor1, fontSize: 12.0),
-                                    ),
+                                    Flexible(child:Text(
+                                      data_upcoming[index]['hashtag'] != null ? data_upcoming[index]['hashtag'].toString(): "",
+                                      style: TextStyle(color: kTextThemColor1, fontSize: 12.0), )),
                                     Text(
                                       data_upcoming[index]['price'] != null ? data_upcoming[index]['price'].toString(): "",
                                       style: TextStyle(
@@ -190,17 +223,17 @@ class _UpComing extends State<UpComing>with AutomaticKeepAliveClientMixin<UpComi
                                   ],
                                 ),
                                 Text(
-                                  items_upcoming[index]['campaign_name'],
+                                  items_upcoming[index]['campaign_name'].toString(),
                                   style: TextStyle(
                                       color: kTextThemColor3, fontSize: 18.0),
                                 ),
                                 Text(
-                                  items_upcoming[index]['location'],
+                                  items_upcoming[index]['location'].toString(),
                                   style: TextStyle(
                                       color: kTextThemColor1, fontSize: 12.0),
                                 ),
                                 Text(
-                                  items_upcoming[index]['niche'] +" - "+data_upcoming[index]['gender'],
+                                  items_upcoming[index]['niche'].toString() +" - "+data_upcoming[index]['gender'].toString(),
                                   style: TextStyle(
                                       color: kTextThemColor1, fontSize: 12.0),
                                 ),
@@ -217,7 +250,54 @@ class _UpComing extends State<UpComing>with AutomaticKeepAliveClientMixin<UpComi
       ),
     );
   }
- }
+  showAlertDialog(BuildContext context) {
+    // set up the AlertDialog
+    const Color red = Color(0xFFee7f9f);
+    var size = MediaQuery.of(context).size;
+    AlertDialog alert = AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius:
+      BorderRadius.all(Radius.circular(30))),
+      backgroundColor: red.withOpacity(0.6),
+
+      content:  Container(
+          height: size.height/2,
+          decoration: BoxDecoration(
+            shape: BoxShape.rectangle,
+            borderRadius: BorderRadius.circular(30.0),),
+          child:Column(
+            children: [
+              SizedBox(height: size.height/20,),
+              Image.asset("assets/smile.png"),
+              SizedBox(height: size.height/30,),
+              Container(
+                alignment: Alignment.center,
+                child:Text("You need to register \nor\n Log In first to access this page",textAlign:TextAlign.center,style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/40, color: Colors.white),),),
+              SizedBox(height: size.height/30,),
+
+              Row(
+                  children:[
+                    SizedBox(width: size.width/12,),
+                    new Image.asset('assets/facebook.png',fit:BoxFit.fill,),
+                    SizedBox(width: size.width/12),
+                    new Image.asset('assets/google.png',fit:BoxFit.fill,),
+                  ]
+              )
+            ],
+
+          )
+
+      ),
+
+    );
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+}
 
 
 

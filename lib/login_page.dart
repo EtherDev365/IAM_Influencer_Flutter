@@ -1,19 +1,137 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app_kazee5/login_splash.dart';
 import 'package:flutter_app_kazee5/utils/value.dart';
 import 'CustomDialog.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert' as JSON;
 class MyDemo extends StatefulWidget {
   @override
   login_page createState() => login_page();
 }
 class login_page extends State<MyDemo> {
+  String formstep_url="http://36.37.120.131/iam-mobile/api/influencer/form-step";
+  String kota_url="http://36.37.120.131/iam-mobile/api/influencer/get-kota";
   var currentSelectedcity;
+  int currentSelectedcity_id;
   var currentSelectedprovinsi;
+  int currentSelectedprovinsi_id;
+
+
+  final TextEditingController full_nameFilter = new TextEditingController();
+  String full_name = "";
+  login_page(){
+    full_nameFilter.addListener(full_nameListen);
+    usernameFilter.addListener(usernameListen);
+    no_handphoneFilter.addListener(no_handphoneListen);
+    id_provinsiFilter.addListener(id_provinsiListen);
+    id_kotaFilter.addListener(id_kotaListen);
+  }
+  void full_nameListen() {
+    if (full_nameFilter.text.isEmpty) {
+      full_name = "";
+    } else {
+      full_name = full_nameFilter.text;
+    }
+  }
+  final TextEditingController usernameFilter = new TextEditingController();
+  String username="";
+  void usernameListen() {
+    if (usernameFilter.text.isEmpty) {
+      username = "";
+    } else {
+      username = usernameFilter.text;
+    }
+  }
+  final TextEditingController no_handphoneFilter = new TextEditingController();
+  String no_handphone = "";
+  void no_handphoneListen() {
+    if (no_handphoneFilter.text.isEmpty) {
+      no_handphone = "";
+    } else {
+      no_handphone = no_handphoneFilter.text;
+    }
+  }
+  final TextEditingController id_provinsiFilter = new TextEditingController();
+  String id_provinsi = "";
+  void id_provinsiListen() {
+    if (id_provinsiFilter.text.isEmpty) {
+      id_provinsi = "";
+    } else {
+      id_provinsi = id_provinsiFilter.text;
+    }
+  }
+  final TextEditingController id_kotaFilter = new TextEditingController();
+  String id_kota = "";
+  void id_kotaListen() {
+    if (id_kotaFilter.text.isEmpty) {
+      id_kota = "";
+    } else {
+      id_kota = id_kotaFilter.text;
+    }
+  }
+
+
+void initState(){
+    super.initState();
+}
+
+  Future<String> getJsonData_kota(String url,int id_provinsi) async {
+    http.post(Uri.encodeFull(url), body: {
+      "id_provinsi":id_provinsi.toString(),
+     }).then((response) {
+      if(response.statusCode==200){  var convertDataToJson = jsonDecode(response.body);
+      data_kota = convertDataToJson['data'];}
+      for(int i=0;i<data_kota.length;i++){kota.add(data_kota[i]['name']);}
+
+    });
+    return "Success";
+  }
+  final _formKey = GlobalKey<FormState>();
+  bool _validate = false;
+  String validateFullname(String value) {
+    String patttern = r'(^[a-zA-Z ]*$)';
+    RegExp regExp = new RegExp(patttern);
+    if (value.length == 0) {
+      return "* Full name is Required";
+    } else if (!regExp.hasMatch(value)) {
+      return "* Full name must be a-z and A-Z";
+    }
+    return null;
+  }
+
+  String validateusername(String value) {
+    if (value.length == 0) {
+      return "* Username is Required";
+    }
+    return null;
+  }
+  String validateHandphone_number(String value) {
+    if (value.length == 0) {
+      return "* Handphone number is Required";
+    }
+    return null;
+  }
+  String validateProvinsi_city(String value) {
+    if ((currentSelectedprovinsi==null) | (currentSelectedcity==null)) {
+      return "       * Province and City are Required";
+    }
+    return null;
+  }
+
+  String validatecheckbox(String value) {
+    if (checked==false) {
+      return "        * You need to check this agreement";
+    }
+    return null;
+  }
+
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    var Kota = ["Bandung", "Batu", "Bekasi","Denpasar"];
-    var Provinsi = ["Papua", "East Java", "Aceh","Central Java","West Java","West Sumatra"];
     const Color red = Color(0xFFef5642);
     const Color light_red = Color(0xFFf23367);
     const Color light_white = Color(0xFFf7c8b6);
@@ -23,228 +141,317 @@ class login_page extends State<MyDemo> {
     const Color next = Color(0xFF674575);
     const Color checkbox_white = Color(0xFFffffff);
     return Scaffold(
-      body: Center(
-         child:Container(
-           width: size.width,height: size.height,
-           decoration: BoxDecoration(
-             gradient:LinearGradient(colors: [light_red,red],begin: Alignment.bottomCenter,end: Alignment.topCenter,),
-             color: red,),
-             child:  ListView(
-               scrollDirection: Axis.vertical,
-               children: [
-                 SizedBox(height: size.height/15),
-                 Container(
-                   alignment: Alignment.center,
-                   child:Text("Complete Registration",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/40, color: light_white),),),
-                 SizedBox(height: size.height/25),
-                 Row( children:[SizedBox(width: size.width/10),Text("Nama Lengkap",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: light_grey),), ]),
-                 Container(
-                   height: size.height/15,
-                   margin:EdgeInsets.only(top: size.height/60, left: size.width/10, right:size.width/10,),
-                   child: TextField(
-                     autofocus: false,
-                     style: TextStyle(fontSize: size.height/45, color: Colors.black54),
-                     cursorColor: Colors.black54,
-                     decoration: InputDecoration(
-                       border: InputBorder.none,
-                       filled: true,
-                       fillColor: light_grey,
-                       contentPadding:
-                       const EdgeInsets.only(left: 14.0, bottom: 8.0, top: 8.0),
-                       focusedBorder: OutlineInputBorder(
-                         borderSide: BorderSide(color: Colors.transparent),
-                         borderRadius: BorderRadius.circular(10),
-                       ),
-                       enabledBorder: UnderlineInputBorder(
-                         borderSide: BorderSide(color: Colors.transparent),
-                         borderRadius: BorderRadius.circular(10),
-                       ),
-                     ),
-                   ),
-                 ),
-                 SizedBox(height: size.height/50),
-                 Row( children:[SizedBox(width: size.width/10),Text("Akun Instagram",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: light_grey),), ]),
-                 Container(
-                   height: size.height/15,
-                   margin:EdgeInsets.only(top: size.height/60, left: size.width/10, right:size.width/10,),
-                   child: TextField(
-                     autofocus: false,
-                     style: TextStyle(fontSize: size.height/45, color: Colors.black54),
-                     cursorColor: Colors.black54,
-                     decoration: InputDecoration(
-                       border: InputBorder.none,
-                       filled: true,
-                       fillColor: light_grey,
-                       contentPadding:
-                       const EdgeInsets.only(left: 14.0, bottom: 8.0, top: 8.0),
-                       focusedBorder: OutlineInputBorder(
-                         borderSide: BorderSide(color: Colors.transparent),
-                         borderRadius: BorderRadius.circular(10),
-                       ),
-                       enabledBorder: UnderlineInputBorder(
-                         borderSide: BorderSide(color: Colors.transparent),
-                         borderRadius: BorderRadius.circular(10),
-                       ),
-                     ),
-                   ),
-                 ),
-                 SizedBox(height: size.height/50),
-                 Row( children:[SizedBox(width: size.width/10),Text("No Handphone",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: light_grey),), ]),
-                 Container(
-                   height: size.height/15,
-                   margin:EdgeInsets.only(top: size.height/60, left: size.width/10, right:size.width/10,),
-                   child: TextField(
-                     autofocus: false,
-                     style: TextStyle(fontSize: size.height/45, color: Colors.black54),
-                     cursorColor: Colors.black54,
-                     decoration: InputDecoration(
-                       border: InputBorder.none,
-                       filled: true,
-                       fillColor: light_grey,
-                       contentPadding:
-                       const EdgeInsets.only(left: 14.0, bottom: 8.0, top: 8.0),
-                       focusedBorder: OutlineInputBorder(
-                         borderSide: BorderSide(color: Colors.transparent),
-                         borderRadius: BorderRadius.circular(10),
-                       ),
-                       enabledBorder: UnderlineInputBorder(
-                         borderSide: BorderSide(color: Colors.transparent),
-                         borderRadius: BorderRadius.circular(10),
-                       ),
-                     ),
-                   ),
-                 ),
-                 SizedBox(height: size.height/50),
-                 Row( children:[SizedBox(width: size.width/10),Text("Lokasi Domisili",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: light_grey),), ]),
-                 SizedBox(height: size.height/60),
-                 Container(
-
-                   margin: EdgeInsets.only(left: size.width/10,right: size.width/10),
-                   decoration: BoxDecoration(
-                     color: light_grey,
-                     borderRadius: BorderRadius.circular(10),
-                   ),
-                   child: FormField<String>(
-                     builder: (FormFieldState<String> state) {
-                       return InputDecorator(
-                         decoration: InputDecoration(
-                             contentPadding:const EdgeInsets.only(left: 14.0),
-                             border: OutlineInputBorder(
-                                 borderSide: BorderSide(color: Colors.transparent),
-                                 borderRadius: BorderRadius.circular(10.0))),
-                         child: DropdownButtonHideUnderline(
-                           child: DropdownButton<String>(
-                             hint: Text("Pilih Provinsi",style: TextStyle(fontSize: size.height/45,fontStyle: FontStyle.normal, color: Colors.white)),
-                             value: currentSelectedprovinsi,
-                             isDense: true,
-                             onChanged: (newValue) {
-                               setState(() {
-                                 currentSelectedprovinsi=newValue;
-                               });
-                             },
-                             items: Provinsi.map((String value) {
-                               return DropdownMenuItem<String>(
-                                 value: value,
-                                 child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/52, color: Colors.black54)),
-                               );
-                             }).toList(),
-                           ),
+      body: Form(
+        key: _formKey,
+        autovalidate: _validate,
+        child: Center(
+            child:Container(
+              width: size.width,height: size.height,
+              decoration: BoxDecoration(
+                gradient:LinearGradient(colors: [light_red,red],begin: Alignment.bottomCenter,end: Alignment.topCenter,),
+                color: red,),
+              child:  ListView(
+                scrollDirection: Axis.vertical,
+                children: [
+                  SizedBox(height: size.height/20),
+                  Container(
+                    alignment: Alignment.center,
+                    child:Text("Complete Registration",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/40, color: light_white),),),
+                  SizedBox(height: size.height/30),
+                  Row( children:[SizedBox(width: size.width/10),Text("Nama Lengkap",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: light_grey),), ]),
+                  Container(
+                    height:  50,
+                    margin:EdgeInsets.only(top: size.height/60, left: size.width/10, right:size.width/10,),
+                    child: TextFormField(
+                      validator: validateFullname,
+                      autovalidate: _validate,
+                      controller: full_nameFilter,
+                      style: TextStyle(fontSize: size.height/45, color: Colors.black54),
+                      cursorColor: Colors.black54,
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)
+                          ),
+                        errorStyle: TextStyle(color: Colors.white),
+                        filled: true,
+                        fillColor: light_grey,
+                        contentPadding: const EdgeInsets.only(left: 14.0, bottom: 8, top: 8),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.transparent),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.transparent),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                         focusedErrorBorder: OutlineInputBorder(
+                           borderSide: BorderSide(color: Colors.transparent),
+                           borderRadius: BorderRadius.circular(10),
                          ),
-                       );
-                     },
-                   ),
-                 ),
-                 SizedBox(height: size.height/50),
-                 Container(
-               margin: EdgeInsets.only(left: size.width/10,right: size.width/10),
-               decoration: BoxDecoration(
-               color: light_grey,
-               borderRadius: BorderRadius.circular(10),
-               ),
-               child: FormField<String>(
-                 builder: (FormFieldState<String> state) {
-                   return InputDecorator(
-                     decoration: InputDecoration(
-                             contentPadding:const EdgeInsets.only(left: 14.0),
-                             border: OutlineInputBorder(
-                             borderSide: BorderSide(color: Colors.transparent),
-                             borderRadius: BorderRadius.circular(10.0))),
-                     child: DropdownButtonHideUnderline(
-                       child: DropdownButton<String>(
-                         hint: Text("Pilih Kota",style: TextStyle(fontSize: size.height/45,fontStyle: FontStyle.normal, color: Colors.white)),
-                         value: currentSelectedcity,
-                         isDense: true,
-                         onChanged: (newValue) {
-                           setState(() {
-                             currentSelectedcity=newValue;
-                           });
-                         },
-                         items: Kota.map((String value) {
-                           return DropdownMenuItem<String>(
-                             value: value,
-                             child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/52, color: Colors.black54)),
-                           );
-                         }).toList(),
-                       ),
-                     ),
-                   );
-                 },
-               ),
-             ),
-                 SizedBox(height: size.height/40),
-                 Row(
-                   children: [
-                     SizedBox(width: size.width/10),
-                     GestureDetector(
-                       onTap: (){
-                         checked=!(checked);
-                       },
-                       child: new Transform.scale(
-                           scale:1.5,
-                           child:new Checkbox(
-                           checkColor: Colors.black,
-                           activeColor: checkbox_white,
-                           value: checked,
-                           onChanged: (val) {
-                             setState(() {
-                               checked = val;
-                             });}
-                       )),),
+                          disabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.transparent),
+                            borderRadius: BorderRadius.circular(10),)
 
-                     Text(" I accept the terms in the  ",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/60, color: light_white),),
-                     GestureDetector(
-                       onTap: (){
-                         showDialog(context: context, builder: (BuildContext context) => CustomDialog(),);
-                       },
-                       child:Text("T&C agreement",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/60, color: blue),),),
+                      ),
 
-                   ],
-                 ),
-                 SizedBox(height: size.height/30),
-                 Row(
-                   children: [
-                     SizedBox(width: size.width/1.5),
-                     ButtonTheme(
-                       minWidth: size.width/4,
-                       height: size.height/18,
-                       child: RaisedButton(
-                         shape: RoundedRectangleBorder(
-                             borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  SizedBox(height: size.height/70),
+                  Row( children:[SizedBox(width: size.width/10),Text("Akun Instagram",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: light_grey),), ]),
+                  Container(
+                    height: size.height/15,
+                    margin:EdgeInsets.only(top: size.height/60, left: size.width/10, right:size.width/10,),
+                    child: TextFormField(
+                      validator: validateusername,
+                      autovalidate: _validate,
+                      controller: full_nameFilter,
+                      autofocus: false,
+                      style: TextStyle(fontSize: size.height/45, color: Colors.black54),
+                      cursorColor: Colors.black54,
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)
+                          ),
+                          errorStyle: TextStyle(color: Colors.white),
+                          filled: true,
+                          fillColor: light_grey,
+                          contentPadding: const EdgeInsets.only(left: 14.0, bottom: 8, top: 8),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.transparent),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.transparent),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.transparent),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          disabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.transparent),
+                            borderRadius: BorderRadius.circular(10),)
+
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: size.height/70),
+                  Row( children:[SizedBox(width: size.width/10),Text("No Handphone",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: light_grey),), ]),
+                  Container(
+                    height: size.height/15,
+                    margin:EdgeInsets.only(top: size.height/60, left: size.width/10, right:size.width/10,),
+                    child: TextFormField(
+                      validator: validateHandphone_number,
+                      autovalidate: _validate,
+                      controller: no_handphoneFilter,
+                      autofocus: false,
+                      style: TextStyle(fontSize: size.height/45, color: Colors.black54),
+                      cursorColor: Colors.black54,
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)
+                          ),
+                          errorStyle: TextStyle(color: Colors.white),
+                          filled: true,
+                          fillColor: light_grey,
+                          contentPadding: const EdgeInsets.only(left: 14.0, bottom: 8, top: 8),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.transparent),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.transparent),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.transparent),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          disabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.transparent),
+                            borderRadius: BorderRadius.circular(10),)
+
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  SizedBox(height: size.height/70),
+                  Row( children:[SizedBox(width: size.width/10),Text("Lokasi Domisili",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: light_grey),), ]),
+                  SizedBox(height: size.height/60),
+                  Container(
+
+                    margin: EdgeInsets.only(left: size.width/10,right: size.width/10),
+                    decoration: BoxDecoration(
+                      color: light_grey,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: FormField<String>(
+                      builder: (FormFieldState<String> state) {
+                        return InputDecorator(
+                          decoration: InputDecoration(
+                              contentPadding:const EdgeInsets.only(left: 14.0),
+                              border: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.transparent),
+                                  borderRadius: BorderRadius.circular(10.0))),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              hint: Text("Pilih Provinsi",style: TextStyle(fontSize:14,fontStyle: FontStyle.normal, color: Colors.white)),
+                              value: currentSelectedprovinsi,
+                              isDense: true,
+                              onChanged: (newValue) {
+                                setState(() {
+                                  currentSelectedprovinsi=newValue;
+                                  currentSelectedprovinsi_id=int.parse(data_provinsi[provinsi.indexOf(currentSelectedprovinsi)]['id_provinsi']);
+                                  currentSelectedcity=null;
+                                  getJsonData_kota(kota_url,currentSelectedprovinsi_id);
+                                });
+                              },
+                              items: provinsi.map((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 12, color: Colors.black54)),
+                                );
+                              }).toList(),
                             ),
-                         onPressed: () {
-                           Navigator.push(context, MaterialPageRoute(builder: (context) => login_splash(),));
-                         },
-                         color: next,
-                         textColor: light_white,
-                         child: Text("Next",style: TextStyle(fontSize: size.width/30)),
-                       ),
-                     )
-                   ],
-                    )
-               ],
-             ),
-         )
-      ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: size.height/50),
+                  Container(
+                    margin: EdgeInsets.only(left: size.width/10,right: size.width/10),
+                    decoration: BoxDecoration(
+                      color: light_grey,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: FormField<String>(
+                      builder: (FormFieldState<String> state) {
+                        return InputDecorator(
+                          decoration: InputDecoration(
+                              contentPadding:const EdgeInsets.only(left: 14.0),
+                              border: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.transparent),
+                                  borderRadius: BorderRadius.circular(10.0))),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              hint: Text("Pilih Kota",style: TextStyle(fontSize: 14,fontStyle: FontStyle.normal, color: Colors.white)),
+                              value: currentSelectedcity,
+                              isDense: true,
+                              onChanged: (newValue) {
+                                setState(() {
+                                  currentSelectedcity= newValue;
+                                  currentSelectedcity_id=kota.indexOf(newValue);
+                                });
+                              },
+                              items: kota.map((String value) {
+                                return DropdownMenuItem<String>(
+                                  value:value,
+                                  child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 12, color: Colors.black54)),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                 Container(height: size.height/40,
+                   margin:EdgeInsets.only(top: size.height/60, left: size.width/10, right:size.width/10,),
+                 child: TextFormField(
+                   validator: validateProvinsi_city,
+                   autovalidate: _validate,
+                   decoration: InputDecoration(
+                       border: InputBorder.none,
+                     enabledBorder: UnderlineInputBorder(
+                       borderSide: BorderSide(color: Colors.transparent),
+                       borderRadius: BorderRadius.circular(10),
+                     ),
+                     errorStyle: TextStyle(color: Colors.white,fontSize: 11)
+                   ),
+                 ),),
+                  Row(
+                    children: [
+                      SizedBox(width: size.width/10),
+                      GestureDetector(
+                        onTap: (){
+                          checked=!(checked);
+                        },
+                        child: new Transform.scale(
+                            scale:1,
+                            child:new Checkbox(
+                                checkColor: Colors.black,
+                                activeColor: checkbox_white,
+                                value: checked,
+                                onChanged: (val) {
+                                  setState(() {
+                                    checked = val;
+                                  });}
+                            )),),
+
+                      Text("I accept the terms in the  ",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/60, color: light_white),),
+                      GestureDetector(
+                        onTap: (){
+                          showDialog(context: context, builder: (BuildContext context) => CustomDialog(),);
+                        },
+                        child:Text("T&C agreement",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/60, color: blue),),),
+
+                    ],
+                  ),
+                  Container(height: size.height/40,
+                    margin:EdgeInsets.only( left: size.width/10, right:size.width/10,),
+                    child: TextFormField(
+                      validator: validatecheckbox,
+                      autovalidate: _validate,
+                      decoration: InputDecoration(
+                          border: InputBorder.none,
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.transparent),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          errorStyle: TextStyle(color: Colors.white,fontSize: 11)
+                      ),
+                    ),),
+                  SizedBox(height: size.height/30),
+                  Row(
+                    children: [
+                      SizedBox(width: size.width/1.5),
+                      ButtonTheme(
+                        minWidth: size.width/4,
+                        height: size.height/18,
+                        child: RaisedButton(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          onPressed: () {
+                            if (_formKey.currentState.validate()) {
+                              // If the form is valid, display a snackbar. In the real world,
+                              // you'd often call a server or save the information in a database.
+                              http.post(Uri.encodeFull(formstep_url), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},body: {
+                                "full_name":full_name,
+                                "username": username,
+                                "no_handphone": no_handphone,
+                                "id_provinsi":currentSelectedprovinsi_id.toString(),
+                                "id_kota":currentSelectedcity_id.toString(),
+
+                              }).then((response) {
+                                if(response.statusCode==200){var json=jsonDecode(response.body);if(json['status']==1){Navigator.push(context, MaterialPageRoute(builder: (context) => login_splash(),));}}
+                              });
+                            }
+
+                          },
+                          color: next,
+                          textColor: light_white,
+                          child: Text("Next",style: TextStyle(fontSize: size.width/30)),
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              ),
+            )
+        ),
+      )
     );
 
   }

@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_kazee5/home/home_page.dart';
 import 'package:flutter_app_kazee5/login.dart';
+import 'package:flutter_app_kazee5/login_page.dart';
 import 'package:flutter_app_kazee5/utils/value.dart';
 import 'package:http/http.dart' as http;
 void main() {
@@ -27,9 +29,9 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 class _MyHomePageState extends State<MyHomePage> {
-   final String allcampagins_url = "http://36.37.120.131/iam-mobile/api/influencer/all-campaign";
-   final String invitation_url = "http://36.37.120.131/iam-mobile/api/influencer/my-campaign/invitation";
-   final String upcoming_url = "http://36.37.120.131/iam-mobile/api/influencer/upcoming-campaign";
+  final String allcampagins_url = "http://36.37.120.131/iam-mobile/api/influencer/all-campaign";
+  final String upcoming_url = "http://36.37.120.131/iam-mobile/api/influencer/upcoming-campaign";
+
   Future<String> getJsonData_allcampagins(String url) async {
     var response = await http.get(
       //Encode the url
@@ -39,48 +41,50 @@ class _MyHomePageState extends State<MyHomePage> {
       var convertDataToJson = jsonDecode(response.body);
       data_allcampagins = convertDataToJson['data'];
     });
+    Timer(Duration(seconds: 2),
+            ()=>Navigator.push(context,
+            MaterialPageRoute(builder:
+                (context) =>
+                HomePage()
+            )
+        )
+    );
     return "Success";
   }
-   Future<String> getJsonData_invitation(String url) async {
-     var response = await http.get(
-       //Encode the url
-         Uri.encodeFull(url));
-     print(response.body);
-     setState(() {
-       var convertDataToJson = jsonDecode(response.body);
-       data_allcampagins = convertDataToJson['data'];
-     });
-     return "Success";
-   }
 
-   Future<String> getJsonData_upcoming(String url) async {
-     var response = await http.get(
-       //Encode the url
-         Uri.encodeFull(url));
-     print(response.body);
-     setState(() {
-       var convertDataToJson = jsonDecode(response.body);
-       release_date=convertDataToJson['release_date'];
-       data_upcoming = convertDataToJson['data'];
-     });
-     return "Success";
-   }
+  Future<String> getJsonData_upcoming(String url) async {
+    var response = await http.get(
+      //Encode the url
+        Uri.encodeFull(url));
+    setState(() {
+      var convertDataToJson = jsonDecode(response.body);
+      release_date=convertDataToJson['release_date'];
+      data_upcoming = convertDataToJson['data'];
+    });
+    return "Success";
+  }
+
+  String provinsi_url="http://36.37.120.131/iam-mobile/api/influencer/get-provinsi";
+  Future<String> getJsonData_provinsi(String url) async {
+    var response = await http.get(
+      //Encode the url
+        Uri.encodeFull(url));
+    print(response.body);
+    setState(() {
+      var convertDataToJson = jsonDecode(response.body);
+      data_provinsi = convertDataToJson['data'];
+      for(int i=0;i<data_provinsi.length;i++){provinsi.add(data_provinsi[i]['name']);}
+    });
+    return "Success";
+  }
+
   @override
   void initState() {
     super.initState();
     // this.getJsonData_invitation(invitation_url);
-    this.getJsonData_allcampagins(allcampagins_url);
-
+    this.getJsonData_provinsi(provinsi_url);
     this.getJsonData_upcoming(upcoming_url);
-
-    Timer(Duration(seconds: 3),
-            ()=>Navigator.pushReplacement(context,
-            MaterialPageRoute(builder:
-                (context) =>
-                SecondScreen()
-            )
-        )
-    );
+    this.getJsonData_allcampagins(allcampagins_url);
   }
   @override
   Widget build(BuildContext context) {

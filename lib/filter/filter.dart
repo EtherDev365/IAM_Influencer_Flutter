@@ -1,33 +1,35 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_kazee5/utils/CustomSlider.dart';
 import 'package:flutter_app_kazee5/utils/color.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:flutter_app_kazee5/utils/value.dart';
 class Filter extends StatefulWidget {
   Filter({Key key, this.title}) : super(key: key);
-
   final String title;
-
   @override
   _Filter createState() => _Filter();
 }
-
-
-class _Filter extends State<Filter> {
-  double _starValue = 0;
-  double _endValue = 0;
+class _Filter extends State<Filter>with AutomaticKeepAliveClientMixin<Filter> {
+  @override
+  bool get wantKeepAlive => true;
+  String filter_url="http://36.37.120.131/iam-mobile/api/influencer/filter-campaign";
   double minValue = 0;
-  double maxValue = 100000;
-
+  double maxValue = 10000;
   final startController = TextEditingController();
   final endController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-
     startController.addListener(_setStartValue);
+    startController.text=starValue.toString();
     endController.addListener(_setEndValue);
+    endController.text=endValue.toString();
+    setState(() {
+
+    });
   }
 
 
@@ -39,7 +41,7 @@ class _Filter extends State<Filter> {
         double.parse(startController.text).roundToDouble() <= maxValue &&
         double.parse(endController.text).roundToDouble() <= maxValue) {
       setState(() {
-        _starValue = double.parse(startController.text).roundToDouble();
+        starValue = double.parse(startController.text).toInt();
       });
     }
     print("Second text field: ${startController.text}");
@@ -53,27 +55,19 @@ class _Filter extends State<Filter> {
         double.parse(startController.text).roundToDouble() <= maxValue &&
         double.parse(endController.text).roundToDouble() <= maxValue) {
       setState(() {
-        _endValue = double.parse(endController.text).roundToDouble();
+        endValue = double.parse(endController.text).toInt();
       });
     }
     print("Second text field: ${endController.text}");
   }
 
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is removed from the widget tree.
-    // This also removes the _printLatestValue listener.
-    startController.dispose();
-    endController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
 
     List<String> kategori = [
       "Parenting",
-      "Entertainment",
+      "Entertaiment",
       "Health & Sport",
       "Lifestyle & Travel",
       "Fashion",
@@ -83,18 +77,18 @@ class _Filter extends State<Filter> {
       "Other"
     ];
     List<String> status = [
-      "On Going",
-      "Finished",
+      "ongoing",
+      "finished",
     ];
     List<String> gender = [
       "Male",
       "Female",
     ];
-    List<String> selectedReportList = List();
 
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         centerTitle: true,
         title:Text("Filter Campaign ",style:TextStyle(fontWeight:FontWeight.bold,fontSize: size.width/22)),
         flexibleSpace: Container(
@@ -104,7 +98,7 @@ class _Filter extends State<Filter> {
           Container(
             margin:EdgeInsets.only(top:size.width/150,right:size.width/10,),
             alignment: Alignment.center,
-            child: Text("Clear",style:TextStyle(fontWeight:FontWeight.bold,fontSize: size.width/22),),)
+            child:InkWell(child:Text("Clear",style:TextStyle(fontWeight:FontWeight.bold,fontSize: size.width/22),),onTap: (){setState((){selectedChoices_state.clear();selectedChoices_gender.clear();selectedChoices_category.clear();starValue=0;endValue=0;startController.text=starValue.toString();endController.text=endValue.toString();});}),)
         ],
       ),
       body:SingleChildScrollView(child: Center(
@@ -116,10 +110,10 @@ class _Filter extends State<Filter> {
                 Text("Katgori",style:TextStyle(fontSize: size.width/22)),
               ],),
               SizedBox(height: size.height/40,),
-              Container(margin: EdgeInsets.only(left:size.width/20,),child:SingleChildScrollView(scrollDirection:Axis.horizontal,child:MultiSelectChip(kategori,
+              Container(margin: EdgeInsets.only(left:size.width/20,),child:SingleChildScrollView(scrollDirection:Axis.horizontal,child:MultiSelectChip_category(kategori,
                 onSelectionChanged: (selectedList) {
                   setState(() {
-                    selectedReportList = selectedList;
+                    selectedReportList_category = selectedList;
                   });
                 },),),),
               SizedBox(height: size.height/20,),
@@ -130,9 +124,9 @@ class _Filter extends State<Filter> {
 
               ],),
               SizedBox(height: size.height/40,),
-              Container(alignment:Alignment.centerLeft,margin: EdgeInsets.only(left:size.width/20,),child:SingleChildScrollView(scrollDirection:Axis.horizontal,child:MultiSelectChip(status, onSelectionChanged: (selectedList) {
+              Container(alignment:Alignment.centerLeft,margin: EdgeInsets.only(left:size.width/20,),child:SingleChildScrollView(scrollDirection:Axis.horizontal,child:MultiSelectChip_status(status, onSelectionChanged: (selectedList) {
                 setState(() {
-                  selectedReportList = selectedList;
+                  selectedReportList_status = selectedList;
                 });
               },),),),
               SizedBox(height: size.height/20,),
@@ -142,9 +136,9 @@ class _Filter extends State<Filter> {
 
               ],),
               SizedBox(height: size.height/50,),
-              Container(alignment:Alignment.centerLeft,margin: EdgeInsets.only(left:size.width/20,),child:SingleChildScrollView(scrollDirection:Axis.horizontal,child:MultiSelectChip(gender, onSelectionChanged: (selectedList) {
+              Container(alignment:Alignment.centerLeft,margin: EdgeInsets.only(left:size.width/20,),child:SingleChildScrollView(scrollDirection:Axis.horizontal,child:MultiSelectChip_gender(gender, onSelectionChanged: (selectedList) {
                 setState(() {
-                  selectedReportList = selectedList;
+                  selectedReportList_gender = selectedList;
                 });
               },),),),
               SizedBox(height: size.height/20,),
@@ -182,26 +176,25 @@ class _Filter extends State<Filter> {
               activeTrackColor: kSelectedLabelColor,
               inactiveTrackColor:  Colors.grey[300],
               trackHeight: 3.0,
-              thumbShape:CustomSliderThumbCircle(),
+              thumbShape:CustomSliderThumbCircle(thumbRadius: 12.0),
               thumbColor: kSelectedLabelColor,
               overlayColor: kSelectedLabelColor.withAlpha(50),
               overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0),
             ),child: RangeSlider(
-            values: RangeValues(_starValue, _endValue),
+            values: RangeValues(starValue.roundToDouble(), endValue.roundToDouble()),
             min: minValue,
             max: maxValue,
             onChanged: (values) {
               setState(() {
-                _starValue = values.start.roundToDouble();
-                _endValue = values.end.roundToDouble();
-                startController.text =
-                    values.start.roundToDouble().toString();
-                endController.text = values.end.roundToDouble().toString();
+                starValue = values.start.toInt();
+                endValue = values.end.toInt();
+                startController.text =values.start.toInt().toString();
+                endController.text = values.end.toInt().toString();
               });
             },
           ),),
 
-              SizedBox(height: size.height/15,),
+              SizedBox(height: size.height/30,),
               GestureDetector(
                 onTap: () {
                 },
@@ -209,7 +202,22 @@ class _Filter extends State<Filter> {
                     width: size.width/1.7,
                     height: size.height/20,
                   decoration: BoxDecoration(borderRadius: BorderRadius.circular(60),gradient: kLinearGradient),
-                  child: Center(child:Text("Save",style: TextStyle(color:Colors.white,fontSize:  size.height/40,)),)
+                  child: InkWell(child:Center(child:Text("Save",style: TextStyle(color:Colors.white,fontSize:  size.height/40,)),),onTap: (){
+                   http.post(filter_url, body: {
+                      "status":(selectedReportList_status.length==0)?"":selectedReportList_status.reduce((value, element) => value + ',' + element),
+                      "category":(selectedReportList_category.length==0)?"":selectedReportList_category.reduce((value, element) => value + ',' + element),
+                      "gender": (selectedReportList_gender.length==0)?"":selectedReportList_gender.reduce((value, element) => value + ',' + element),
+                      "followers":(starValue).toString()+"-"+(endValue).toString()
+                    }).then((response) {
+                      print(response.body);
+                      var convertDataToJson = jsonDecode(response.body);
+                      data_allcampagins = convertDataToJson['data'];
+                      if(data_allcampagins!=null){ if((5>=data_allcampagins.length)){items.clear();items.addAll(data_allcampagins);present=data_allcampagins.length;}else{items.clear();items.addAll(data_allcampagins.getRange(0, 5));present=5;}}
+                      Navigator.pop(context);
+                    });
+
+
+                  },)
                 ),
               )
             ],
@@ -217,6 +225,8 @@ class _Filter extends State<Filter> {
       ),)
     );
   }
+
+
 }
 
 class SliderCustomShape {
@@ -253,6 +263,144 @@ class _MultiSelectChipState extends State<MultiSelectChip> {
                   ? selectedChoices.remove(item)
                   : selectedChoices.add(item);
               widget.onSelectionChanged(selectedChoices); // +added
+            });
+          },
+        ),
+      ));
+    });
+    return choices;
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      children: _buildChoiceList(),
+    );
+  }
+}
+//status part
+class MultiSelectChip_status extends StatefulWidget {
+  final List<String> reportList;
+  final Function(List<String>) onSelectionChanged; // +added
+  MultiSelectChip_status(
+      this.reportList,
+      {this.onSelectionChanged} // +added
+      );
+  @override
+  _MultiSelectChipState_status createState() => _MultiSelectChipState_status();
+}
+class _MultiSelectChipState_status extends State<MultiSelectChip_status> {
+  // String selectedChoice = "";
+
+  _buildChoiceList() {
+    List<Widget> choices = List();
+    widget.reportList.forEach((item) {
+      choices.add(Container(
+        margin: const EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.all(3.0),
+        child: ChoiceChip(
+          padding: const EdgeInsets.only(top:6.0,bottom: 6,left: 10,right: 10),
+          label: Text(item,style: TextStyle(fontSize: 16,color:selectedChoices_state.contains(item)
+              ?Colors.white:Colors.black38 ),),
+          selected: selectedChoices_state.contains(item),
+          selectedColor: kSelectedLabelColor,
+          onSelected: (selected) {
+            setState(() {
+              selectedChoices_state.contains(item)
+                  ? selectedChoices_state.remove(item)
+                  : selectedChoices_state.add(item);
+              widget.onSelectionChanged(selectedChoices_state); // +added
+            });
+          },
+        ),
+      ));
+    });
+    return choices;
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      children: _buildChoiceList(),
+    );
+  }
+}
+//category part
+class MultiSelectChip_category extends StatefulWidget {
+  final List<String> reportList;
+  final Function(List<String>) onSelectionChanged; // +added
+  MultiSelectChip_category(
+      this.reportList,
+      {this.onSelectionChanged} // +added
+      );
+  @override
+  _MultiSelectChipState_category createState() => _MultiSelectChipState_category();
+}
+class _MultiSelectChipState_category extends State<MultiSelectChip_category> {
+  // String selectedChoice = "";
+
+  _buildChoiceList() {
+    List<Widget> choices = List();
+    widget.reportList.forEach((item) {
+      choices.add(Container(
+        margin: const EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.all(3.0),
+        child: ChoiceChip(
+          padding: const EdgeInsets.only(top:6.0,bottom: 6,left: 10,right: 10),
+          label: Text(item,style: TextStyle(fontSize: 16,color:selectedChoices_category.contains(item)
+              ?Colors.white:Colors.black38 ),),
+          selected: selectedChoices_category.contains(item),
+          selectedColor: kSelectedLabelColor,
+          onSelected: (selected) {
+            setState(() {
+              selectedChoices_category.contains(item)
+                  ? selectedChoices_category.remove(item)
+                  : selectedChoices_category.add(item);
+              widget.onSelectionChanged(selectedChoices_category); // +added
+            });
+          },
+        ),
+      ));
+    });
+    return choices;
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      children: _buildChoiceList(),
+    );
+  }
+}
+//gender part
+class MultiSelectChip_gender extends StatefulWidget {
+  final List<String> reportList;
+  final Function(List<String>) onSelectionChanged; // +added
+  MultiSelectChip_gender(
+      this.reportList,
+      {this.onSelectionChanged} // +added
+      );
+  @override
+  _MultiSelectChip_gender createState() => _MultiSelectChip_gender();
+}
+class _MultiSelectChip_gender extends State<MultiSelectChip_gender> {
+  // String selectedChoice = "";
+
+  _buildChoiceList() {
+    List<Widget> choices = List();
+    widget.reportList.forEach((item) {
+      choices.add(Container(
+        margin: const EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.all(3.0),
+        child: ChoiceChip(
+          padding: const EdgeInsets.only(top:6.0,bottom: 6,left: 10,right: 10),
+          label: Text(item,style: TextStyle(fontSize: 16,color:selectedChoices_gender.contains(item)
+              ?Colors.white:Colors.black38 ),),
+          selected: selectedChoices_gender.contains(item),
+          selectedColor: kSelectedLabelColor,
+          onSelected: (selected) {
+            setState(() {
+              selectedChoices_gender.contains(item)
+                  ? selectedChoices_gender.remove(item)
+                  : selectedChoices_gender.add(item);
+              widget.onSelectionChanged(selectedChoices_gender); // +added
             });
           },
         ),
