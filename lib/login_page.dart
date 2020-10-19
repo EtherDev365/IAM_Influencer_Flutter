@@ -15,7 +15,7 @@ class login_page extends State<MyDemo> {
   String formstep_url="http://36.37.120.131/iam-mobile/api/influencer/form-step";
   String kota_url="http://36.37.120.131/iam-mobile/api/influencer/get-kota";
   var currentSelectedcity;
-  int currentSelectedcity_id;
+  String currentSelectedcity_id;
   var currentSelectedprovinsi;
   int currentSelectedprovinsi_id;
 
@@ -79,12 +79,17 @@ void initState(){
 }
 
   Future<String> getJsonData_kota(String url,int id_provinsi) async {
+    List<String> kkootta;
     http.post(Uri.encodeFull(url), body: {
       "id_provinsi":id_provinsi.toString(),
      }).then((response) {
       if(response.statusCode==200){  var convertDataToJson = jsonDecode(response.body);
       data_kota = convertDataToJson['data'];}
-      for(int i=0;i<data_kota.length;i++){kota.add(data_kota[i]['name']);}
+      kkootta=List<String>();
+      for(int i=0;i<data_kota.length;i++){kkootta.add(data_kota[i]['name']);}
+      setState(() {
+        kota=kkootta;
+      });
 
     });
     return "Success";
@@ -309,7 +314,7 @@ void initState(){
                               items: provinsi.map((String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
-                                  child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 12, color: Colors.black54)),
+                                  child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 11, color: Colors.black54)),
                                 );
                               }).toList(),
                             ),
@@ -341,13 +346,13 @@ void initState(){
                               onChanged: (newValue) {
                                 setState(() {
                                   currentSelectedcity= newValue;
-                                  currentSelectedcity_id=kota.indexOf(newValue);
+                                  currentSelectedcity_id=data_kota[kota.indexOf(newValue)]['id_kota'];
                                 });
                               },
                               items: kota.map((String value) {
                                 return DropdownMenuItem<String>(
                                   value:value,
-                                  child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 12, color: Colors.black54)),
+                                  child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 11, color: Colors.black54)),
                                 );
                               }).toList(),
                             ),

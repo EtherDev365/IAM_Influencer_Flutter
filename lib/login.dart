@@ -15,6 +15,7 @@ class SecondScreen extends StatefulWidget {
   _SecondScreen createState() => _SecondScreen();
 }
 class _SecondScreen extends State<SecondScreen> {
+
   FirebaseAuth _auth = FirebaseAuth.instance;
   GoogleSignIn googleSignIn = GoogleSignIn();
   String google_login_url ="http://36.37.120.131/iam-mobile/api/influencer/auth/login/google";
@@ -129,6 +130,7 @@ class _SecondScreen extends State<SecondScreen> {
                 });  },child: Container(width:size.width/5,child:new Image.asset('assets/facebook.png',fit:BoxFit.cover,),)),
                 SizedBox(width: size.width/8),
                 InkWell(onTap: (){
+
                   signInWithGoogle().whenComplete(() {
                     http.post(Uri.encodeFull(google_login_url), body: {
                       "name":name,

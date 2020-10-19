@@ -51,8 +51,12 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
                         child: Container(
                             child: Stack(
                               children: [
-                                Container(child: Image.network(
-                                   profile_background)),
+                                Container(
+                                    height: 250,
+                                    decoration: BoxDecoration(image: DecorationImage(
+                                      fit: BoxFit.fitWidth,
+                                      image:NetworkImage(profile_background),
+                                    ),), ),
                                 Positioned(top: 15, child: Row(
                                   children: [
                                     SizedBox(width: size.width / 1.2,),

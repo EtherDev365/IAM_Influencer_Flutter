@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app_kazee5/home/home_page.dart';
 import 'package:flutter_app_kazee5/login_splash.dart';
 import 'package:flutter_app_kazee5/utils/color.dart';
 import 'package:flutter_app_kazee5/utils/value.dart';
@@ -12,16 +13,47 @@ class edit_profile extends StatefulWidget {
   @override
   _edit_profile createState() => _edit_profile();
 }
+
 class _edit_profile extends State<edit_profile> {
+
+
+ List<String> cities;
   String formstep_url="http://36.37.120.131/iam-mobile/api/influencer/form-step";
   String kota_url="http://36.37.120.131/iam-mobile/api/influencer/get-kota";
+  String editprofile_url="http://36.37.120.131/iam-mobile/api/influencer/profile-settings";
   var currentSelectedcity;
-  int currentSelectedcity_id;
+  String currentSelectedcity_id;
   var currentSelectedprovinsi;
   int currentSelectedprovinsi_id;
   var currentSelectedreligion;
   var currentSelectedgender;
+ String profile_url="http://36.37.120.131/iam-mobile/api/influencer/data/detail";
+ Future<String> getJsonData_profile(String url) async {
 
+   var response = await http.get(
+     //Encode the url
+     Uri.encodeFull(url), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},);
+   var convertDataToJson = jsonDecode(response.body);
+   setState(() {
+     profile_full_name=(convertDataToJson['data']['full_name']!=null)?convertDataToJson['data']['full_name']:"";
+     profile_background=(convertDataToJson['data']['backround']!=null)?convertDataToJson['data']['backround'].toString():"";
+     profile_avatar=(convertDataToJson['data']['avatar']!=null)?convertDataToJson['data']['avatar'].toString():"";
+     profile_regencies_name =(convertDataToJson['data']['regencies_name']!=null)?convertDataToJson['data']['regencies_name'].toString():"";
+     profile_post_count =(convertDataToJson['data']['post_count']!=null)?convertDataToJson['data']['post_count'].toString():"";
+     profile_followers =(convertDataToJson['data']['followers']!=null)?convertDataToJson['data']['followers'].toString():"";
+     profile_following =(convertDataToJson['data']['following']!=null)?convertDataToJson['data']['following'].toString():"";
+     profile_niche =(convertDataToJson['data']['niche']!=null)?convertDataToJson['data']['niche'].toString():null;
+     niche = profile_niche.split(",");
+     guarantee_reach =(convertDataToJson['data']['guarantee_reach']!=null)?convertDataToJson['data']['guarantee_reach'].toString():"";
+     engagement_rate =(convertDataToJson['data']['engagement_rate']!=null)?convertDataToJson['data']['engagement_rate'].toString():"";
+     est_reach_post =(convertDataToJson['data']['est_reach_post']!=null)?convertDataToJson['data']['est_reach_post'].toString():"";
+     est_reach_story=(convertDataToJson['data']['est_reach_story']!=null)?convertDataToJson['data']['est_reach_story'].toString():"";
+     est_low_price =(convertDataToJson['data']['est_low_price']!=null)?convertDataToJson['data']['est_low_price'].toString():"";
+     est_high_price =(convertDataToJson['data']['est_high_price']!=null)?convertDataToJson['data']['est_high_price'].toString():"";
+
+   });
+   return "Success";
+ }
   _edit_profile(){
     full_nameFilter.addListener(full_nameListen);
     no_handphoneFilter.addListener(no_handphoneListen);
@@ -31,6 +63,26 @@ class _edit_profile extends State<edit_profile> {
     workFilter.addListener(workListen);
     emailFilter.addListener(emailListen);
     genderFilter.addListener(genderLiisten);
+    religionFilter.addListener(religionLiisten);
+  }
+  void initState() {
+
+      setState(() {
+        currentSelectedgender=edit_gender;
+        currentSelectedreligion=edit_religious;
+        currentSelectedprovinsi=edit_provinsi;
+        currentSelectedcity=edit_kota;
+        full_nameFilter.text=edit_fullname;
+        no_handphoneFilter.text=edit_handphone;
+        id_provinsiFilter.text=edit_provinsi;
+        id_kotaFilter.text=edit_kota;
+        addressFilter.text=edit_location;
+        workFilter.text=edit_workplace;
+        emailFilter.text=edit_email;
+        genderFilter.text=edit_gender;
+        religionFilter.text=edit_religious;
+      });
+    super.initState();
   }
   final TextEditingController full_nameFilter = new TextEditingController();
   String full_name = "";
@@ -118,17 +170,19 @@ class _edit_profile extends State<edit_profile> {
 
 
 
-  void initState(){
-    super.initState();
-  }
 
   Future<String> getJsonData_kota(String url,int id_provinsi) async {
+    List<String> editkkota;
     http.post(Uri.encodeFull(url), body: {
       "id_provinsi":id_provinsi.toString(),
     }).then((response) {
       if(response.statusCode==200){  var convertDataToJson = jsonDecode(response.body);
-      data_kota = convertDataToJson['data'];}
-      for(int i=0;i<data_kota.length;i++){kota.add(data_kota[i]['name']);}
+      data_kota_edit = convertDataToJson['data'];}
+      editkkota=List<String>();
+      for(int i=0;i<data_kota_edit.length;i++){editkkota.add(data_kota_edit[i]['name']);}
+      setState(() {
+      kota_edit_profile=editkkota;
+      });
 
     });
     return "Success";
@@ -157,14 +211,8 @@ class _edit_profile extends State<edit_profile> {
   }
 
   String validateemail(String value) {
-    String p = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regExp = new RegExp(p);
     if (value.length == 0) {
       return "* Username is Required";
-    }else{
-      if(regExp.hasMatch(value)){
-        return "*Email type invalid.";
-      }
     }
     return null;
   }
@@ -500,9 +548,10 @@ class _edit_profile extends State<edit_profile> {
                     Row( children:[SizedBox(width: size.width/10),Text("Provinsi",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: Colors.black87),), ]),
                     SizedBox(height: size.height/60),
                     Container(
+
                       margin: EdgeInsets.only(left: size.width/10,right: size.width/10),
                       decoration: BoxDecoration(
-                        color: Colors.black12,
+                        color: light_grey,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: FormField<String>(
@@ -515,7 +564,7 @@ class _edit_profile extends State<edit_profile> {
                                     borderRadius: BorderRadius.circular(10.0))),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
-                                hint: Text("Pilih Provinsi",style: TextStyle(fontSize:14,fontStyle: FontStyle.normal, color: Colors.white)),
+
                                 value: currentSelectedprovinsi,
                                 isDense: true,
                                 onChanged: (newValue) {
@@ -529,7 +578,7 @@ class _edit_profile extends State<edit_profile> {
                                 items: provinsi.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
-                                    child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 12, color: Colors.black54)),
+                                    child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 11, color: Colors.black54)),
                                   );
                                 }).toList(),
                               ),
@@ -544,7 +593,7 @@ class _edit_profile extends State<edit_profile> {
                     Container(
                       margin: EdgeInsets.only(left: size.width/10,right: size.width/10),
                       decoration: BoxDecoration(
-                        color: Colors.black12,
+                        color: light_grey,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: FormField<String>(
@@ -557,19 +606,19 @@ class _edit_profile extends State<edit_profile> {
                                     borderRadius: BorderRadius.circular(10.0))),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
-                                hint: Text("Pilih Kota",style: TextStyle(fontSize: 14,fontStyle: FontStyle.normal, color: Colors.white)),
                                 value: currentSelectedcity,
                                 isDense: true,
                                 onChanged: (newValue) {
                                   setState(() {
                                     currentSelectedcity= newValue;
-                                    currentSelectedcity_id=kota.indexOf(newValue);
+                                    currentSelectedcity_id=data_kota_edit[kota_edit_profile.indexOf(newValue)]['id_kota'];
+
                                   });
                                 },
-                                items: kota.map((String value) {
+                                items: kota_edit_profile.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value:value,
-                                    child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 12, color: Colors.black54)),
+                                    child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 11, color: Colors.black54)),
                                   );
                                 }).toList(),
                               ),
@@ -636,11 +685,39 @@ class _edit_profile extends State<edit_profile> {
 
                     SizedBox(height: size.height/30),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        SizedBox(width: size.width/3),
-                        InkWell(onTap: () {
-                          if (_formKey.currentState.validate()) {
 
+                        InkWell(onTap: () {
+                          print(currentSelectedcity_id);
+                          if (_formKey.currentState.validate()) {
+                            print(full_nameFilter.text);
+                            print(emailFilter.text);
+                            print(currentSelectedgender);
+                            print(no_handphoneFilter.text);
+                            print(workFilter.text);
+                            print(current_religion);
+                            print(currentSelectedprovinsi_id.toString());
+                            print(currentSelectedcity_id.toString());  print(addressFilter.text);
+                            print(birthday);
+
+
+                            http.post(Uri.encodeFull(editprofile_url), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},body: {
+                              "full_name": full_nameFilter.text,
+                              "email": emailFilter.text,
+                              "gender": currentSelectedgender,
+                              "no_handphone": no_handphoneFilter.text,
+                              "work": workFilter.text,
+                              "religion": current_religion,
+                              "id_provinsi": currentSelectedprovinsi_id.toString(),
+                              "id_kota": currentSelectedcity_id.toString(),
+                              "location": addressFilter.text,
+                              "tanggal_lahir": birthday
+
+                            }).then((response) {
+                              if(response.statusCode==200){var json=jsonDecode(response.body);if(json['status']==1){getJsonData_profile(profile_url); Navigator.pop(context);}}
+                            });
 
                           }
 

@@ -30,6 +30,25 @@ class _HomePageState extends State<HomePage>
   TabController tabController;
   int index = 0;
   int bottomIndex = 0;
+  String kota_url="http://36.37.120.131/iam-mobile/api/influencer/get-kota";
+  Future<String> getJsonData_kota(String url,int id_provinsi) async {
+    List<String> kkotta;
+    http.post(Uri.encodeFull(url), body: {
+      "id_provinsi":id_provinsi.toString(),
+    }).then((response) {
+      if(response.statusCode==200){  var convertDataToJson = jsonDecode(response.body);
+      data_kota_edit = convertDataToJson['data'];}
+      kkotta=List<String>();
+      for(int i=0;i<data_kota_edit.length;i++){kkotta.add(data_kota_edit[i]['name']);}
+      setState(() {
+        kota_edit_profile=kkotta;
+      });
+    });
+    return "Success";
+  }
+
+
+
   //profile
   String profile_url="http://36.37.120.131/iam-mobile/api/influencer/data/detail";
   Future<String> getJsonData_profile(String url) async {
@@ -38,25 +57,47 @@ class _HomePageState extends State<HomePage>
       //Encode the url
       Uri.encodeFull(url), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},);
       var convertDataToJson = jsonDecode(response.body);
-      profile_full_name=(convertDataToJson['data']['full_name']!=null)?convertDataToJson['data']['full_name']:"";
-    profile_background=(convertDataToJson['data']['backround']!=null)?convertDataToJson['data']['backround'].toString():"";
-    profile_avatar=(convertDataToJson['data']['avatar']!=null)?convertDataToJson['data']['avatar'].toString():"";
-    profile_regencies_name =(convertDataToJson['data']['regencies_name']!=null)?convertDataToJson['data']['regencies_name'].toString():"";
-    profile_post_count =(convertDataToJson['data']['post_count']!=null)?convertDataToJson['data']['post_count'].toString():"";
-    profile_followers =(convertDataToJson['data']['followers']!=null)?convertDataToJson['data']['followers'].toString():"";
-    profile_following =(convertDataToJson['data']['following']!=null)?convertDataToJson['data']['following'].toString():"";
-    profile_niche =(convertDataToJson['data']['niche']!=null)?convertDataToJson['data']['niche'].toString():null;
-    niche = profile_niche.split(",");
-    print(convertDataToJson['data']['niche']);
-    guarantee_reach =(convertDataToJson['data']['guarantee_reach']!=null)?convertDataToJson['data']['guarantee_reach'].toString():"";
-    engagement_rate =(convertDataToJson['data']['engagement_rate']!=null)?convertDataToJson['data']['engagement_rate'].toString():"";
-    est_reach_post =(convertDataToJson['data']['est_reach_post']!=null)?convertDataToJson['data']['est_reach_post'].toString():"";
-    est_reach_story=(convertDataToJson['data']['est_reach_story']!=null)?convertDataToJson['data']['est_reach_story'].toString():"";
-    est_low_price =(convertDataToJson['data']['est_low_price']!=null)?convertDataToJson['data']['est_low_price'].toString():"";
-    est_high_price =(convertDataToJson['data']['est_high_price']!=null)?convertDataToJson['data']['est_high_price'].toString():"";
-
+      setState(() {
+        profile_full_name=(convertDataToJson['data']['full_name']!=null)?convertDataToJson['data']['full_name']:"";
+        profile_background=(convertDataToJson['data']['backround']!=null)?convertDataToJson['data']['backround'].toString():"";
+        profile_avatar=(convertDataToJson['data']['avatar']!=null)?convertDataToJson['data']['avatar'].toString():"";
+        profile_regencies_name =(convertDataToJson['data']['regencies_name']!=null)?convertDataToJson['data']['regencies_name'].toString():"";
+        profile_post_count =(convertDataToJson['data']['post_count']!=null)?convertDataToJson['data']['post_count'].toString():"";
+        profile_followers =(convertDataToJson['data']['followers']!=null)?convertDataToJson['data']['followers'].toString():"";
+        profile_following =(convertDataToJson['data']['following']!=null)?convertDataToJson['data']['following'].toString():"";
+        profile_niche =(convertDataToJson['data']['niche']!=null)?convertDataToJson['data']['niche'].toString():null;
+        niche = profile_niche.split(",");
+        guarantee_reach =(convertDataToJson['data']['guarantee_reach']!=null)?convertDataToJson['data']['guarantee_reach'].toString():"";
+        engagement_rate =(convertDataToJson['data']['engagement_rate']!=null)?convertDataToJson['data']['engagement_rate'].toString():"";
+        est_reach_post =(convertDataToJson['data']['est_reach_post']!=null)?convertDataToJson['data']['est_reach_post'].toString():"";
+        est_reach_story=(convertDataToJson['data']['est_reach_story']!=null)?convertDataToJson['data']['est_reach_story'].toString():"";
+        est_low_price =(convertDataToJson['data']['est_low_price']!=null)?convertDataToJson['data']['est_low_price'].toString():"";
+        est_high_price =(convertDataToJson['data']['est_high_price']!=null)?convertDataToJson['data']['est_high_price'].toString():"";
+      });
     return "Success";
   }
+  //edit profile part
+  String editprofile_url="http://36.37.120.131/iam-mobile/api/influencer/check-data-availability";
+  Future<String> getJsonData_editprofile(String url) async {
+
+    var response = await http.get(
+      //Encode the url
+      Uri.encodeFull(url), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},);
+    var convertDataToJson = jsonDecode(response.body);
+    edit_fullname=(convertDataToJson['data']['full_name']!=null)?convertDataToJson['data']['full_name']:"";
+    edit_gender=(convertDataToJson['data']['gender']!=null)?convertDataToJson['data']['gender'].toString():"";
+    edit_email=(convertDataToJson['data']['email']!=null)?convertDataToJson['data']['email'].toString():"";
+    edit_handphone =(convertDataToJson['data']['no_handphone']!=null)?convertDataToJson['data']['no_handphone'].toString():"";
+    edit_workplace =(convertDataToJson['data']['work']!=null)?convertDataToJson['data']['work'].toString():"";
+    edit_religious =(convertDataToJson['data']['religion']!=null)?convertDataToJson['data']['religion'].toString():"";
+    birthday=convertDataToJson['data']['tanggal_lahir'];
+    edit_provinsi =(convertDataToJson['data']['province_name']!=null)?convertDataToJson['data']['province_name'].toString():"";
+    edit_kota =(convertDataToJson['data']['regencies_name']!=null)?convertDataToJson['data']['regencies_name'].toString():null;
+    edit_location =(convertDataToJson['data']['location']!=null)?convertDataToJson['data']['location'].toString():"";
+    getJsonData_kota(kota_url,int.parse(data_provinsi[provinsi.indexOf(edit_provinsi)]['id_provinsi']));
+    return "Success";
+  }
+
   //my campaigns favorite part
   String url_mycampaigns_favorite="http://36.37.120.131/iam-mobile/api/influencer/favorite-campaign";
   Future<String> getJsonData_mycampaigns_favorite(String url) async {
@@ -155,14 +196,18 @@ class _HomePageState extends State<HomePage>
     super.initState();
 
     if(loged==true){
+
     getJsonData_profile(profile_url);
+    getJsonData_editprofile(editprofile_url);
     getJsonData_invitation(url_invitation);
     getJsonData_notifikasi(url_notifikasi);
     getJsonData_active(url_active);
     getJsonData_mycampaignsinvitations(url_mycampaigns_invitations);
     getJsonData_mycampaigns_waiting(url_mycampaigns_waiting);
     getJsonData_mycampaigns_finished(url_mycampaigns_finished);
-    getJsonData_mycampaigns_favorite(url_mycampaigns_favorite);}
+    getJsonData_mycampaigns_favorite(url_mycampaigns_favorite);
+
+    }
   }
 
   @override
