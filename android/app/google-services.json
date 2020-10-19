@@ -1,35 +1,51 @@
 {
   "project_info": {
-    "project_number": "675970900189",
-    "firebase_url": "https://iam-app-1bdfe.firebaseio.com",
-    "project_id": "iam-app-1bdfe",
-    "storage_bucket": "iam-app-1bdfe.appspot.com"
+    "project_number": "116053008632",
+    "firebase_url": "https://kazee5-9bb43.firebaseio.com",
+    "project_id": "kazee5-9bb43",
+    "storage_bucket": "kazee5-9bb43.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:675970900189:android:213e1536a302591f64bb34",
+        "mobilesdk_app_id": "1:116053008632:android:57522389c9ad6388135b0d",
         "android_client_info": {
           "package_name": "id.iam.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "675970900189-amid8onhng3trl9u5pdel8ah3gpbud08.apps.googleusercontent.com",
+          "client_id": "116053008632-oormisd3rbp1fr4ta40r5815i1shlipq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "id.iam.app",
+            "certificate_hash": "b00ba3354cf2367971d974a3e310f9092ddda3e1"
+          }
+        },
+        {
+          "client_id": "116053008632-ahk076e8640bc9gbrbmufiibsb30n7lb.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBY0Eq5DChZMdEXKqIYdiOnt74KilP48RM"
+          "current_key": "AIzaSyBW2aqv5D59_NLPCBvdeL29VaokJYMRX4c"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "675970900189-amid8onhng3trl9u5pdel8ah3gpbud08.apps.googleusercontent.com",
+              "client_id": "116053008632-ahk076e8640bc9gbrbmufiibsb30n7lb.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "116053008632-nhj070dksvlhihridoskn9ri1aot2hj1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "id.iam.app",
+                "app_store_id": "123123123123123"
+              }
             }
           ]
         }
