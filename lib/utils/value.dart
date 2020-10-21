@@ -44,7 +44,7 @@ String profile_followers="";
 String profile_following="";
 String profile_full_name="";
 String profile_niche;
-List<String> niche;
+List<String> niche=List<String>();
 String edit_fullname;
 String edit_gender;
 String edit_email;
@@ -108,4 +108,17 @@ List<String> invitation_selectedReportList_status=["ongoing","finished",];
 List<String> invitation_selectedChoices_state = ["ongoing","finished",];
 List<String> invitation_selectedChoices_category = ["Parenting","Entertaiment", "Health & Sport", "Lifestyle & Travel", "Fashion", "Technology", "Beauty", "Food", "Other"];
 List<String> invitation_selectedChoices_gender = ["Male","Female",];
+
+List data_timeline;
+List items_timeline=List();
+
+List data_activity;
+List items_activity=List();
+
+String activity_logo="";
+String activity_name="";
+String activity_status="";
+String activity_date="";
+
+
 

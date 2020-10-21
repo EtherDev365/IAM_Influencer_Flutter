@@ -7,11 +7,78 @@ import 'package:flutter_app_kazee5/utils/value.dart';
 import 'CustomDialog.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as JSON;
+
+import 'home/home_page.dart';
 class MyDemo extends StatefulWidget {
   @override
   login_page createState() => login_page();
 }
 class login_page extends State<MyDemo> {
+
+  //load profile page data
+  String profile_url="http://36.37.120.131/iam-mobile/api/influencer/data/detail";
+  Future<String> getJsonData_profile(String url) async {
+    var response = await http.get(
+      Uri.encodeFull(profile_url), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},).then((response) {
+      if(response.statusCode==200){var convertDataToJson = jsonDecode(response.body);
+      if(convertDataToJson['status']==1){
+      setState(() {
+        profile_full_name=(convertDataToJson['data']['full_name']!=null)?convertDataToJson['data']['full_name']:"";
+        profile_background=(convertDataToJson['data']['backround']!=null)?convertDataToJson['data']['backround'].toString():"";
+        profile_avatar=(convertDataToJson['data']['avatar']!=null)?convertDataToJson['data']['avatar'].toString():"";
+        profile_regencies_name =(convertDataToJson['data']['regencies_name']!=null)?convertDataToJson['data']['regencies_name'].toString():"";
+        profile_post_count =(convertDataToJson['data']['post_count']!=null)?convertDataToJson['data']['post_count'].toString():"";
+        profile_followers =(convertDataToJson['data']['followers']!=null)?convertDataToJson['data']['followers'].toString():"";
+        profile_following =(convertDataToJson['data']['following']!=null)?convertDataToJson['data']['following'].toString():"";
+        profile_niche =(convertDataToJson['data']['niche']!=null)?convertDataToJson['data']['niche'].toString():null;
+        niche = profile_niche.split(",");
+        guarantee_reach =(convertDataToJson['data']['guarantee_reach']!=null)?convertDataToJson['data']['guarantee_reach'].toString():"";
+        engagement_rate =(convertDataToJson['data']['engagement_rate']!=null)?convertDataToJson['data']['engagement_rate'].toString():"";
+        est_reach_post =(convertDataToJson['data']['est_reach_post']!=null)?convertDataToJson['data']['est_reach_post'].toString():"";
+        est_reach_story=(convertDataToJson['data']['est_reach_story']!=null)?convertDataToJson['data']['est_reach_story'].toString():"";
+        est_low_price =(convertDataToJson['data']['est_low_price']!=null)?convertDataToJson['data']['est_low_price'].toString():"";
+        est_high_price =(convertDataToJson['data']['est_high_price']!=null)?convertDataToJson['data']['est_high_price'].toString():"";
+
+      });}else{profile_full_name="";profile_background="";profile_avatar="";profile_regencies_name="";profile_post_count="";profile_followers="";profile_following="";profile_niche="";niche=List<String>();guarantee_reach="";engagement_rate="";est_reach_post="";est_reach_story="";est_low_price="";est_high_price="";
+      }
+      }
+    });
+    getJsonData_timeline(timeline);
+    return "Success";
+  }
+  String timeline="http://36.37.120.131/iam-mobile/api/influencer/timeline-activity";
+  Future<String> getJsonData_timeline(String url) async {
+    var response = await http.get(
+      Uri.encodeFull(timeline), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},).then((response) {
+      if(response.statusCode==200){var convertTojson=jsonDecode(response.body);
+      if(convertTojson['status']==1){
+      setState(() {
+        data_timeline=convertTojson['data'];
+      });}else{data_timeline=null;
+      }
+      }
+    });
+    getJsonData_activity(activity);
+    return "Success";
+  }
+
+  String activity="http://36.37.120.131/iam-mobile/api/influencer/history-campaign";
+  Future<String> getJsonData_activity(String url) async {
+    var response = await http.get(
+      Uri.encodeFull(activity), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},).then((response) {
+      if(response.statusCode==200){var convertDataToJson = jsonDecode(response.body);
+      if(convertDataToJson['status']==1){
+        setState(() {
+          data_activity=convertDataToJson['data'];
+        });}else{
+      }
+      }
+    });
+    // goto login_splash
+    Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(),));
+    return "Success";
+  }
+
   String formstep_url="http://36.37.120.131/iam-mobile/api/influencer/form-step";
   String kota_url="http://36.37.120.131/iam-mobile/api/influencer/get-kota";
   var currentSelectedcity;
@@ -209,7 +276,7 @@ void initState(){
                     child: TextFormField(
                       validator: validateusername,
                       autovalidate: _validate,
-                      controller: full_nameFilter,
+                      controller: usernameFilter,
                       autofocus: false,
                       style: TextStyle(fontSize: size.height/45, color: Colors.black54),
                       cursorColor: Colors.black54,
@@ -430,6 +497,8 @@ void initState(){
                           ),
                           onPressed: () {
                             if (_formKey.currentState.validate()) {
+                              print(currentSelectedprovinsi_id);
+                              print(currentSelectedcity_id);
                               // If the form is valid, display a snackbar. In the real world,
                               // you'd often call a server or save the information in a database.
                               http.post(Uri.encodeFull(formstep_url), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},body: {
@@ -438,9 +507,8 @@ void initState(){
                                 "no_handphone": no_handphone,
                                 "id_provinsi":currentSelectedprovinsi_id.toString(),
                                 "id_kota":currentSelectedcity_id.toString(),
-
                               }).then((response) {
-                                if(response.statusCode==200){var json=jsonDecode(response.body);if(json['status']==1){Navigator.push(context, MaterialPageRoute(builder: (context) => login_splash(),));}}
+                                if(response.statusCode==200){var json=jsonDecode(response.body);if(json['status']==1){  getJsonData_profile(profile_url);}}
                               });
                             }
 

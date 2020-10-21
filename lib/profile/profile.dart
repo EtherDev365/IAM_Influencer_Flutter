@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -11,6 +14,8 @@ import 'package:flutter_app_kazee5/profile_tab/Analytics.dart';
 import 'package:flutter_app_kazee5/profile_tab/timeline.dart';
 import 'package:flutter_app_kazee5/utils/color.dart';
 import 'package:flutter_app_kazee5/utils/value.dart';
+
+import '../Setting.dart';
 class Profile extends StatefulWidget {
   @override
   _Profile createState() => _Profile();
@@ -29,16 +34,82 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
         profile_opentab = tabController_profile.index;
       }); });
 }
+  String kota_url="http://36.37.120.131/iam-mobile/api/influencer/get-kota";
+  Future<String> getJsonData_kota(String url,int id_provinsi) async {
+    List<String> kkotta;
+    http.post(Uri.encodeFull(url), body: {
+      "id_provinsi":id_provinsi.toString(),
+    }).then((response) {
+      if(response.statusCode==200){  var convertDataToJson = jsonDecode(response.body);
+      data_kota_edit = convertDataToJson['data'];}
+      kkotta=List<String>();
+      for(int i=0;i<data_kota_edit.length;i++){kkotta.add(data_kota_edit[i]['name']);}
+      setState(() {
+        kota_edit_profile=kkotta;
+      });
+    });
+    return "Success";
+  }
+// //edit profile part
+//   String editprofile_url="http://36.37.120.131/iam-mobile/api/influencer/check-data-availability";
+//   Future<String> getJsonData_editprofile(String url) async {
+//     var response = await http.get(
+//       //Encode the url
+//       Uri.encodeFull(url), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},).then((response) {
+//    if(response.statusCode==200){
+//      var convertDataToJson = jsonDecode(response.body);
+//      edit_fullname = (convertDataToJson['data']['full_name'] != null)
+//          ? convertDataToJson['data']['full_name']
+//          : "";
+//      edit_gender = (convertDataToJson['data']['gender'] != null)
+//          ? convertDataToJson['data']['gender'].toString()
+//          : "";
+//      edit_email = (convertDataToJson['data']['email'] != null)
+//          ? convertDataToJson['data']['email'].toString()
+//          : "";
+//      edit_handphone = (convertDataToJson['data']['no_handphone'] != null)
+//          ? convertDataToJson['data']['no_handphone'].toString()
+//          : "";
+//      edit_workplace = (convertDataToJson['data']['work'] != null)
+//          ? convertDataToJson['data']['work'].toString()
+//          : "";
+//      edit_religious = (convertDataToJson['data']['religion'] != null)
+//          ? convertDataToJson['data']['religion'].toString()
+//          : "";
+//      birthday = convertDataToJson['data']['tanggal_lahir'];
+//      edit_provinsi = (convertDataToJson['data']['province_name'] != null)
+//          ? convertDataToJson['data']['province_name'].toString()
+//          : "";
+//      edit_kota = (convertDataToJson['data']['regencies_name'] != null)
+//          ? convertDataToJson['data']['regencies_name'].toString()
+//          : null;
+//      edit_location = (convertDataToJson['data']['location'] != null)
+//          ? convertDataToJson['data']['location'].toString()
+//          : "";
+//      if(convertDataToJson['data']['province_name'] != null){  getJsonData_kota(kota_url, int.parse(
+//          data_provinsi[provinsi.indexOf(edit_provinsi)]['id_provinsi']));}
+//
+//      Navigator.push(
+//          context,
+//          CupertinoPageRoute(
+//            builder: (context) => edit_profile(),
+//          ));
+//    }
+//     });
+//     return "Success";
+//   }
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     return loged==false?Container():Scaffold(
       body:NestedScrollView(
+
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           return [
             SliverAppBar(
               automaticallyImplyLeading: false,
-              pinned: false,
+              pinned: true,
               backgroundColor: Colors.white,
               flexibleSpace: FlexibleSpaceBar(
                 collapseMode: CollapseMode.pin,
@@ -66,7 +137,11 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
                                       alignment: Alignment.center,
                                       child: InkWell(
                                         onTap: () {
-
+                                          Navigator.push(
+                                              context,
+                                              CupertinoPageRoute(
+                                                builder: (context) => Setting(),
+                                              ));
                                         },
                                         child: Image.asset(
                                           "assets/ic_setting.png",
@@ -108,11 +183,8 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
                                     .black38),),
                                 SizedBox(height: 15),
                                 InkWell(onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      CupertinoPageRoute(
-                                        builder: (context) => edit_profile(),
-                                      ));
+                                  // getJsonData_editprofile(editprofile_url);
+                                  Navigator.push( context, CupertinoPageRoute(builder: (context) => edit_profile(),));
                                 }, child: Container(
                                   height: 30.0,
                                   width: 105.0,
@@ -184,7 +256,8 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
                                         });
                                       },
                                       child: k == 0
-                                          ? Image.asset('assets/down.png')
+
+                                          ? Container(width:20,child:Image.asset('assets/down.png'))
                                           : Container()
                                   )
                                 ],),
@@ -205,8 +278,8 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
                                                 });
                                                 _showDialog();
                                               },
-                                                child: Image.asset(
-                                                    'assets/quote.png'),)),
+                                                child: Container(padding:EdgeInsets.only(top: 5),height:24,child: Image.asset(
+                                                    'assets/quote.png'),),)),
                                           SizedBox(width: size.width / 4,
                                               child: Text(guarantee_reach, style: TextStyle(
                                                   color: Colors.black54),))
@@ -226,8 +299,8 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
 
                                                 _showDialog();
                                               },
-                                                child: Image.asset(
-                                                    'assets/quote.png'),)),
+                                                child: Container(padding:EdgeInsets.only(top: 5),height:24,child: Image.asset(
+                                                    'assets/quote.png'),),)),
                                           SizedBox(width: size.width / 4,
                                               child: Text("$engagement_rate%", style: TextStyle(
                                                   color: Colors.black54),))
@@ -247,8 +320,8 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
 
                                                 _showDialog();
                                               },
-                                                child: Image.asset(
-                                                    'assets/quote.png'),)),
+                                                child: Container(padding:EdgeInsets.only(top: 5),height:24,child: Image.asset(
+                                                    'assets/quote.png'),),)),
                                           SizedBox(width: size.width / 4,
                                               child: Text("$est_reach_post",
                                                 style: TextStyle(
@@ -270,8 +343,8 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
 
                                                 _showDialog();
                                               },
-                                                child: Image.asset(
-                                                    'assets/quote.png'),)),
+                                                child: Container(padding:EdgeInsets.only(top: 5),height:24,child: Image.asset(
+                                                    'assets/quote.png'),),)),
                                           SizedBox(width: size.width / 4,
                                               child: Text("$est_reach_story",
                                                 style: TextStyle(
@@ -292,8 +365,8 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
                                                 });
                                                 _showDialog();
                                               },
-                                                child: Image.asset(
-                                                    'assets/quote.png'),)),
+                                                child: Container(padding:EdgeInsets.only(top: 5),height:24,child: Image.asset(
+                                                    'assets/quote.png'),),)),
                                           SizedBox(width: size.width / 4,
                                               child: Text("$est_low_price-$est_high_price",
                                                 style: TextStyle(
@@ -316,7 +389,7 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
                                           });
                                         },
                                         child: k == 1
-                                            ? Image.asset('assets/up.png')
+                                            ? Container(width:20,child:Image.asset('assets/up.png'),)
                                             : Container()
                                     )
                                   ],
@@ -344,6 +417,7 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
                 ),
               ),
               expandedHeight:  k == 0 ? 570 : 780,
+
               bottom:  PreferredSize(
                   preferredSize: Size.fromHeight(40.0),
                   child:  Container(
