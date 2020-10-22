@@ -35,9 +35,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final String allcampagins_url =
-      "http://36.37.120.131/iam-mobile/api/influencer/all-campaign";
+      "https://web.iam.id/iam-mobile/api/influencer/all-campaign";
   final String upcoming_url =
-      "http://36.37.120.131/iam-mobile/api/influencer/upcoming-campaign";
+      "https://web.iam.id/iam-mobile/api/influencer/upcoming-campaign";
 
   Future<String> getJsonData_allcampagins(String url) async {
     var response = await http.get(
@@ -68,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   String provinsi_url =
-      "http://36.37.120.131/iam-mobile/api/influencer/get-provinsi";
+      "https://web.iam.id/iam-mobile/api/influencer/get-provinsi";
   Future<String> getJsonData_provinsi(String url) async {
     var response = await http.get(
         //Encode the url
