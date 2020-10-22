@@ -1,5 +1,6 @@
 
-import 'package:flutter/cupertino.dart';
+import 'dart:io';
+
 int profile_opentab;
 bool checked = false;
 List data_allcampagins;
@@ -44,19 +45,31 @@ String profile_followers="";
 String profile_following="";
 String profile_full_name="";
 String profile_niche;
-List<String> niche;
+List<String> niche=List<String>();
+String edit_fullname;
+String edit_gender;
+String edit_email;
+String birthday;
+String edit_handphone;
+String edit_workplace;
+String edit_religious;
+String edit_provinsi;
+String edit_kota;
+String edit_location;
 List data_detail_campaign;
 List data_invitations;
 List data_upcoming;
 List data_search;
 List data_provinsi;
 List data_kota;
+List data_kota_edit;
 List data_notifikasi;
 List items_notifi=List();
 List<String> provinsi = new List<String>();
-List<String> gender =["Laki-Laki","Perempuan"];
+List<String> gender =["Laki-laki","Perempuan"];
 List<String> religion =["Islam","Katolik","Protestan","Hindu","Budha"];
 List<String> kota = new List<String>();
+List<String> kota_edit_profile = new List<String>();
 String release_date;
 int detail_campaign_id;
 List items_upcoming = List();
@@ -97,3 +110,17 @@ List<String> invitation_selectedChoices_state = ["ongoing","finished",];
 List<String> invitation_selectedChoices_category = ["Parenting","Entertaiment", "Health & Sport", "Lifestyle & Travel", "Fashion", "Technology", "Beauty", "Food", "Other"];
 List<String> invitation_selectedChoices_gender = ["Male","Female",];
 
+List data_timeline;
+List items_timeline=List();
+
+List data_activity;
+List items_activity=List();
+
+String activity_logo="";
+String activity_name="";
+String activity_status="";
+String activity_date="";
+
+String caption="";
+bool select_foto_feed;
+bool select_foto_story;

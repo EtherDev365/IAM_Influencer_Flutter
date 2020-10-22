@@ -1,26 +1,88 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:intl/intl.dart';
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_kazee5/home/home_page.dart';
 import 'package:flutter_app_kazee5/login_splash.dart';
+import 'package:flutter_app_kazee5/profile/profile.dart';
 import 'package:flutter_app_kazee5/utils/color.dart';
 import 'package:flutter_app_kazee5/utils/value.dart';
 import 'CustomDialog.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as JSON;
+
 class edit_profile extends StatefulWidget {
   @override
   _edit_profile createState() => _edit_profile();
 }
+
 class _edit_profile extends State<edit_profile> {
+  final format = DateFormat("yyyy-MM-dd");
+  DateTime _dateTime=DateTime.parse(birthday);
+  String currentSelectedcity;
+  String currentSelectedcity_id;
+  String currentSelectedprovinsi;
+  int currentSelectedprovinsi_id;
+  String currentSelectedreligion;
+  String currentSelectedgender;
+  String profile_url="http://36.37.120.131/iam-mobile/api/influencer/data/detail";
+  Future<String> getJsonData_profile(String url) async {
+    var response = await http.get(
+      Uri.encodeFull(profile_url), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},).then((response) {
+      if(response.statusCode==200){var convertTojson=jsonDecode(response.body);
+      if(convertTojson['status']==1){ var convertDataToJson = jsonDecode(response.body);
+      setState(() {
+        profile_full_name=(convertDataToJson['data']['full_name']!=null)?convertDataToJson['data']['full_name']:"";
+        profile_background=(convertDataToJson['data']['backround']!=null)?convertDataToJson['data']['backround'].toString():"";
+        profile_avatar=(convertDataToJson['data']['avatar']!=null)?convertDataToJson['data']['avatar'].toString():"";
+        profile_regencies_name =(convertDataToJson['data']['regencies_name']!=null)?convertDataToJson['data']['regencies_name'].toString():"";
+        profile_post_count =(convertDataToJson['data']['post_count']!=null)?convertDataToJson['data']['post_count'].toString():"";
+        profile_followers =(convertDataToJson['data']['followers']!=null)?convertDataToJson['data']['followers'].toString():"";
+        profile_following =(convertDataToJson['data']['following']!=null)?convertDataToJson['data']['following'].toString():"";
+        profile_niche =(convertDataToJson['data']['niche']!=null)?convertDataToJson['data']['niche'].toString():null;
+        niche = profile_niche.split(",");
+        guarantee_reach =(convertDataToJson['data']['guarantee_reach']!=null)?convertDataToJson['data']['guarantee_reach'].toString():"";
+        engagement_rate =(convertDataToJson['data']['engagement_rate']!=null)?convertDataToJson['data']['engagement_rate'].toString():"";
+        est_reach_post =(convertDataToJson['data']['est_reach_post']!=null)?convertDataToJson['data']['est_reach_post'].toString():"";
+        est_reach_story=(convertDataToJson['data']['est_reach_story']!=null)?convertDataToJson['data']['est_reach_story'].toString():"";
+        est_low_price =(convertDataToJson['data']['est_low_price']!=null)?convertDataToJson['data']['est_low_price'].toString():"";
+        est_high_price =(convertDataToJson['data']['est_high_price']!=null)?convertDataToJson['data']['est_high_price'].toString():"";
+        edit_gender= currentSelectedgender;
+        edit_religious=  currentSelectedreligion;
+        edit_provinsi= currentSelectedprovinsi;
+        edit_kota= currentSelectedcity;
+        edit_fullname=full_name;
+        edit_handphone= no_handphone;
+        edit_location= address;
+        edit_workplace= work;
+        edit_email= email;
+        birthday=birth;
+      });}else{
+      edit_gender= currentSelectedgender;
+      edit_religious=  currentSelectedreligion;
+      edit_provinsi= currentSelectedprovinsi;
+      edit_kota= currentSelectedcity;
+      edit_fullname=full_name;
+      edit_handphone= no_handphone;
+      edit_location= address;
+      edit_workplace= work;
+      edit_email= email;
+      birthday=birth;
+
+      profile_full_name="";profile_background="";profile_avatar="";profile_regencies_name="";profile_post_count="";profile_followers="";profile_following="";profile_niche="";niche=List<String>();guarantee_reach="";engagement_rate="";est_reach_post="";est_reach_story="";est_low_price="";est_high_price="";
+    }
+      }
+
+    });
+    Navigator.pop(context);
+
+    return "Success";
+  }
+ List<String> cities;
   String formstep_url="http://36.37.120.131/iam-mobile/api/influencer/form-step";
   String kota_url="http://36.37.120.131/iam-mobile/api/influencer/get-kota";
-  var currentSelectedcity;
-  int currentSelectedcity_id;
-  var currentSelectedprovinsi;
-  int currentSelectedprovinsi_id;
-  var currentSelectedreligion;
-  var currentSelectedgender;
+  String editprofile_url="http://36.37.120.131/iam-mobile/api/influencer/profile-settings";
 
   _edit_profile(){
     full_nameFilter.addListener(full_nameListen);
@@ -31,6 +93,27 @@ class _edit_profile extends State<edit_profile> {
     workFilter.addListener(workListen);
     emailFilter.addListener(emailListen);
     genderFilter.addListener(genderLiisten);
+    birthdayFilter.addListener(birthdayListen);
+
+  }
+  void initState() {
+
+      setState(() {
+        currentSelectedgender=edit_gender;
+        currentSelectedreligion=edit_religious;
+        if(edit_provinsi!=""){currentSelectedprovinsi=edit_provinsi;}
+        currentSelectedcity=edit_kota;
+        full_nameFilter.text=edit_fullname;
+        no_handphoneFilter.text=edit_handphone;
+        id_provinsiFilter.text=edit_provinsi;
+        id_kotaFilter.text=edit_kota;
+        addressFilter.text=edit_location;
+        workFilter.text=edit_workplace;
+        emailFilter.text=edit_email;
+        genderFilter.text=edit_gender;
+        birthdayFilter.text=birthday;
+      });
+    super.initState();
   }
   final TextEditingController full_nameFilter = new TextEditingController();
   String full_name = "";
@@ -104,31 +187,31 @@ class _edit_profile extends State<edit_profile> {
       id_gender = genderFilter.text;
     }
   }
-  final TextEditingController religionFilter = new TextEditingController();
-  String current_religion = "";
-  void religionLiisten() {
-    if (religionFilter.text.isEmpty) {
-      current_religion= "";
+
+  final TextEditingController birthdayFilter = new TextEditingController();
+  String birth = "";
+  void birthdayListen() {
+    if (birthdayFilter.text.isEmpty) {
+      birth = "";
     } else {
-      current_religion = religionFilter.text;
+      birth = birthdayFilter.text;
     }
   }
 
 
 
-
-
-  void initState(){
-    super.initState();
-  }
-
   Future<String> getJsonData_kota(String url,int id_provinsi) async {
+    List<String> editkkota;
     http.post(Uri.encodeFull(url), body: {
       "id_provinsi":id_provinsi.toString(),
     }).then((response) {
       if(response.statusCode==200){  var convertDataToJson = jsonDecode(response.body);
-      data_kota = convertDataToJson['data'];}
-      for(int i=0;i<data_kota.length;i++){kota.add(data_kota[i]['name']);}
+      data_kota_edit = convertDataToJson['data'];}
+      editkkota=List<String>();
+      for(int i=0;i<data_kota_edit.length;i++){editkkota.add(data_kota_edit[i]['name']);}
+      setState(() {
+      kota_edit_profile=editkkota;
+      });
 
     });
     return "Success";
@@ -157,14 +240,8 @@ class _edit_profile extends State<edit_profile> {
   }
 
   String validateemail(String value) {
-    String p = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regExp = new RegExp(p);
     if (value.length == 0) {
       return "* Username is Required";
-    }else{
-      if(regExp.hasMatch(value)){
-        return "*Email type invalid.";
-      }
     }
     return null;
   }
@@ -198,7 +275,6 @@ class _edit_profile extends State<edit_profile> {
     }
     return null;
   }
-
 
 
   @override
@@ -500,9 +576,10 @@ class _edit_profile extends State<edit_profile> {
                     Row( children:[SizedBox(width: size.width/10),Text("Provinsi",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: Colors.black87),), ]),
                     SizedBox(height: size.height/60),
                     Container(
+
                       margin: EdgeInsets.only(left: size.width/10,right: size.width/10),
                       decoration: BoxDecoration(
-                        color: Colors.black12,
+                        color: light_grey,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: FormField<String>(
@@ -515,7 +592,7 @@ class _edit_profile extends State<edit_profile> {
                                     borderRadius: BorderRadius.circular(10.0))),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
-                                hint: Text("Pilih Provinsi",style: TextStyle(fontSize:14,fontStyle: FontStyle.normal, color: Colors.white)),
+
                                 value: currentSelectedprovinsi,
                                 isDense: true,
                                 onChanged: (newValue) {
@@ -529,7 +606,7 @@ class _edit_profile extends State<edit_profile> {
                                 items: provinsi.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
-                                    child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 12, color: Colors.black54)),
+                                    child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 11, color: Colors.black54)),
                                   );
                                 }).toList(),
                               ),
@@ -544,7 +621,7 @@ class _edit_profile extends State<edit_profile> {
                     Container(
                       margin: EdgeInsets.only(left: size.width/10,right: size.width/10),
                       decoration: BoxDecoration(
-                        color: Colors.black12,
+                        color: light_grey,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: FormField<String>(
@@ -557,19 +634,19 @@ class _edit_profile extends State<edit_profile> {
                                     borderRadius: BorderRadius.circular(10.0))),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
-                                hint: Text("Pilih Kota",style: TextStyle(fontSize: 14,fontStyle: FontStyle.normal, color: Colors.white)),
                                 value: currentSelectedcity,
                                 isDense: true,
                                 onChanged: (newValue) {
                                   setState(() {
                                     currentSelectedcity= newValue;
-                                    currentSelectedcity_id=kota.indexOf(newValue);
+                                    currentSelectedcity_id=data_kota_edit[kota_edit_profile.indexOf(newValue)]['id_kota'];
+
                                   });
                                 },
-                                items: kota.map((String value) {
+                                items: kota_edit_profile.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value:value,
-                                    child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 12, color: Colors.black54)),
+                                    child: Text(value,style: TextStyle(fontStyle: FontStyle.normal,fontSize: 11, color: Colors.black54)),
                                   );
                                 }).toList(),
                               ),
@@ -596,9 +673,10 @@ class _edit_profile extends State<edit_profile> {
                     SizedBox(height: size.height/70),
                     Row( children:[SizedBox(width: size.width/10),Text("Alamat & Lokasi Sekarang",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: Colors.black87),), ]),
                     Container(
-                      height:  50,
+                      height:  120,
                       margin:EdgeInsets.only(top: size.height/60, left: size.width/10, right:size.width/10,),
                       child: TextFormField(
+                        maxLines: 5,
                         validator: validateaddress,
                         autovalidate: _validate,
                         controller: addressFilter,
@@ -632,15 +710,95 @@ class _edit_profile extends State<edit_profile> {
 
                       ),
                     ),
+                    SizedBox(height: size.height/70),
+                    Row( children:[SizedBox(width: size.width/10),Text("Tanggal lahir",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: Colors.black87),), ]),
+                    Container(
+                      height:  50,
+                      margin:EdgeInsets.only(top: size.height/60, left: size.width/10, right:size.width/10,),
+                      child: DateTimeField(
+                        format:format,
+                        validator: (DateTime dateTime) {
+                          if (dateTime == null) {
+                            return "Birthday is Required";
+                          }
+                          return null;
+                        },
+
+                       onShowPicker: (context, currentValue) async {
+                       final date = await showDatePicker(
+                       context: context,
+                       firstDate: DateTime(1900),
+                       initialDate: currentValue ?? DateTime.now(),
+                       lastDate: DateTime(2100));
+                       if (date != null) {
+                              return date;
+                             } else {
+                            return currentValue;
+                                 }},
+                        onSaved: (DateTime dateTime) => _dateTime = dateTime,
+                        autovalidate: _validate,
+                        controller: birthdayFilter,
+                        style: TextStyle(fontSize: size.height/45, color: Colors.black54),
+                        cursorColor: Colors.black54,
+                        decoration: InputDecoration(
+                            suffixIcon: Padding(
+                              padding: const EdgeInsetsDirectional.only(end: 12.0),
+                              child: Image.asset('assets/date.png'), 
+                            ),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10)
+                            ),
+                            errorStyle: TextStyle(color: Colors.red),
+                            filled: true,
+                            fillColor: Colors.black12,
+                            contentPadding: const EdgeInsets.only(left: 14.0, bottom: 8, top: 15),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.transparent),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.transparent),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.transparent),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            disabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.transparent),
+                              borderRadius: BorderRadius.circular(10),)
+
+                        ),
+
+                      ),
+                    ),
 
 
                     SizedBox(height: size.height/30),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        SizedBox(width: size.width/3),
+
                         InkWell(onTap: () {
+                          print(currentSelectedcity_id);
                           if (_formKey.currentState.validate()) {
 
+                            http.post(Uri.encodeFull(editprofile_url), headers: {HttpHeaders.authorizationHeader:'Bearer $token'},body: {
+                              "full_name": full_name,
+                              "email": email,
+                              "gender": currentSelectedgender,
+                              "no_handphone": no_handphone,
+                              "work":work,
+                              "religion": currentSelectedreligion,
+                              "id_provinsi": currentSelectedprovinsi_id.toString(),
+                              "id_kota": currentSelectedcity_id.toString(),
+                              "location":address,
+                              "tanggal_lahir": birthday
+
+                            }).then((response) {
+                              if(response.statusCode==200){var json=jsonDecode(response.body);if(json['status']==1){getJsonData_profile(profile_url);}}
+                            });
 
                           }
 

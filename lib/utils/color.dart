@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 const Color kBackgoundColor = Color(0xffffffff);
 const Color kUnselectedLabelColor = Color(0xff353B48);
 const Color kSelectedLabelColor = Color(0xffF0405A);
+const Color pink = Color(0xfffac9c7);
 const Color knavigationSelectedLabelColor = Color(0xff6D031D);
 const Color kTabbarColor = Color(0xffE7E7E7);
 const Color kCardHeaderColor = Color(0xffED3269);
