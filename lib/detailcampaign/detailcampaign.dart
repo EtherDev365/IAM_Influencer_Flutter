@@ -3,11 +3,10 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
-import 'package:flutter_app_kazee5/submit_content.dart';
+import 'package:flutter_app_kazee5/detailcampaign/submit_content.dart';
 import 'package:flutter_app_kazee5/utils/color.dart';
 import 'package:flutter_app_kazee5/utils/value.dart';
 import 'package:http/http.dart' as http;
-
 class DetailCampaign extends StatefulWidget {
   DetailCampaign({Key key, this.title}) : super(key: key);
   final String title;
@@ -28,7 +27,49 @@ class _DetailCampaign extends State<DetailCampaign> with SingleTickerProviderSta
     super.initState();
     if(loged==true){http.get(Uri.encodeFull(list_saved), headers: {HttpHeaders.authorizationHeader:'Bearer $token'}).then((response) {var rep = jsonDecode(response.body);data=rep['data'];for(int i=0;i<data.length;i++){data_saved_id.add(data[i]['id_campaign'].toString());}});}
    }
-  List data;
+   File feed_submit_content;
+   File story_submit_content;
+   String submit_content_url="http://36.37.120.131/iam-mobile/api/influencer/report/submit-content";
+   Future<String> getJsonData_submit_content(String url, File feed, File story, String caption) async {
+     Map<String, String> headers = {
+       "Content-Type": "multipart/form-data",
+       "Authorization": "Baerer " + token,
+     };
+     // var formData = FormData.fromMap({
+     //   'id_campaign':data_detail_campaign[0]['id_campaign'].toString() ,
+     //   'caption': caption,
+     //   'foto_feed': await MultipartFile.fromFile(feed.readAsStringSync(),
+     //       filename: feed.readAsStringSync() .split("/") .last, ),
+     //   'foto_story': await MultipartFile.fromFile(story.readAsStringSync(),
+     //     filename: story.readAsStringSync() .split("/") .last, ),
+     // });
+     // var response = await dio.post(
+     //    url, data: formData,
+     //     options: Options(headers: headers));
+     // final multipartRequest = new http.MultipartRequest('POST', Uri.parse(url));
+     // multipartRequest.headers.addAll(headers);
+     // multipartRequest.files.add(
+     //     await http.MultipartFile.fromPath(
+     //         'foto_feed',
+     //         feed.path
+     //     )
+     // );
+     // multipartRequest.files.add(
+     //     await http.MultipartFile.fromPath(
+     //         'foto_story',
+     //         story.path
+     //     )
+     // );
+     // multipartRequest.fields['id_campaign'] = data_detail_campaign[0]['id_campaign'].toString();
+     // multipartRequest.fields['caption'] = caption;
+     // multipartRequest.send().then((response) {
+     //   print(response.statusCode);
+     //   if (response.statusCode == 200) {print("Uploaded!");}
+     // });
+     return "Success";
+   }
+
+   List data;
    String status_campaign="";
    String status_apply="";
    String messaage="";
@@ -429,7 +470,11 @@ class _DetailCampaign extends State<DetailCampaign> with SingleTickerProviderSta
                              children:[
                                SizedBox(width: size.width/5),
                                InkWell(
-                                 onTap:(){},
+                                 onTap:()async{
+                                   final List<File> pageResult = await Navigator.of(context).push(MaterialPageRoute(builder: (context) => submit_content()));
+                                   feed_submit_content=pageResult[0];
+                                   story_submit_content=pageResult[1];
+                                 },
                                  child:Container(
 
                                      width: size.width/5,
@@ -440,7 +485,9 @@ class _DetailCampaign extends State<DetailCampaign> with SingleTickerProviderSta
                                ),
                                SizedBox(width: size.width/20),
                                InkWell(
-                                 onTap:()  {   },
+                                 onTap:()  {
+                                   // getJsonData_submit_content(submit_content_url, feed_submit_content, story_submit_content, caption);
+                                 },
                                  child:Container(
                                      width: size.width/5,
                                      height: 30,
@@ -454,6 +501,7 @@ class _DetailCampaign extends State<DetailCampaign> with SingleTickerProviderSta
                        ],
                      ), ) ),
                    Step(
+                       isActive:true,
                     title:Text("Step 2",style: TextStyle(color: Colors.pink),),
                     content:Container(
                             height: 90,
@@ -494,6 +542,7 @@ class _DetailCampaign extends State<DetailCampaign> with SingleTickerProviderSta
                                      ), )
                                           ),
                    Step(
+                       isActive:true,
                       title:Text("Step 3",style: TextStyle(color: Colors.pink),),
                        content: Container(
                          height: 90,
@@ -534,6 +583,7 @@ class _DetailCampaign extends State<DetailCampaign> with SingleTickerProviderSta
                          ), )
                       ),
                    Step(
+                       isActive:true,
                        title:Text("Step 4",style: TextStyle(color: Colors.pink),),
                        content: Container(
                          height: 90,

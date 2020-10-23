@@ -673,9 +673,10 @@ class _edit_profile extends State<edit_profile> {
                     SizedBox(height: size.height/70),
                     Row( children:[SizedBox(width: size.width/10),Text("Alamat & Lokasi Sekarang",style: TextStyle(fontStyle: FontStyle.normal,fontSize: size.height/50, color: Colors.black87),), ]),
                     Container(
-                      height:  50,
+                      height:  120,
                       margin:EdgeInsets.only(top: size.height/60, left: size.width/10, right:size.width/10,),
                       child: TextFormField(
+                        maxLines: 5,
                         validator: validateaddress,
                         autovalidate: _validate,
                         controller: addressFilter,

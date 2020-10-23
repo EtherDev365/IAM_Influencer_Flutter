@@ -34,6 +34,9 @@ class _Profile extends State<Profile>with SingleTickerProviderStateMixin {
         profile_opentab = tabController_profile.index;
       }); });
 }
+
+
+
   String kota_url="http://36.37.120.131/iam-mobile/api/influencer/get-kota";
   Future<String> getJsonData_kota(String url,int id_provinsi) async {
     List<String> kkotta;

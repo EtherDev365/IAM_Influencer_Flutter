@@ -479,7 +479,7 @@ class _AllCampaignsState extends State<AllCampaigns>with AutomaticKeepAliveClien
                         getJsonData_profile(profile_url);}
                     });
                   }).catchError((onError) {
-                    Navigator.pushReplacementNamed(context, "/auth");
+
                   });
                 },
                     child: Container(width:size.width/5,child:new Image.asset('assets/google.png',fit:BoxFit.cover,),))

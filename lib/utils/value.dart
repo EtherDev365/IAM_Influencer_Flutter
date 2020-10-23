@@ -1,5 +1,6 @@
 
-import 'package:flutter/cupertino.dart';
+import 'dart:io';
+
 int profile_opentab;
 bool checked = false;
 List data_allcampagins;
@@ -120,5 +121,6 @@ String activity_name="";
 String activity_status="";
 String activity_date="";
 
-
-
+String caption="";
+bool select_foto_feed;
+bool select_foto_story;
